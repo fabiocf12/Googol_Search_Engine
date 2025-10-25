@@ -1,0 +1,25 @@
+<a href="/" id="logo"><img alt="Git" class="no-filter" height="46" src="/images/logo@2x.png" width="110"/></a>, <a href="/about/free-and-open-source">free and open source</a>, <a href="/doc">easy to learn</a>, <a href="/about/small-and-fast">tiny footprint with lightning fast performance</a>, <a href="/about/branching-and-merging">cheap local branching</a>, <a href="/about/staging-area">staging areas</a>, <a href="/about/distributed">multiple workflows</a>, <a href="/about">
+<img height="74" src="/images/icons/fa-gears.svg" width="74"/>
+<h3>About</h3>
+<p>The advantages of Git compared to other source control systems.</p>
+</a>, <a href="/learn">
+<img height="74" src="/images/icons/fa-lightbulb.svg" width="74"/>
+<h3>Learn</h3>
+<p>Pro Git book, videos, tutorials, and cheat sheet</p>
+</a>, <a href="/tools">
+<img height="74" src="/images/icons/fa-screwdriver-wrench.svg" width="74"/>
+<h3>Tools</h3>
+<p>Command line tools, GUIs, and hosting services</p>
+</a>, <a href="/docs">
+<img height="74" src="/images/icons/fa-book-open.svg" width="74"/>
+<h3>Reference</h3>
+<p>Git's reference documentation</p>
+</a>, <a class="install-link" href="/install">
+<img height="74" src="/images/icons/fa-down-long.svg" width="74"/>
+<h3>Install</h3>
+<p>Binary releases for all major platforms.</p>
+</a>, <a href="/community">
+<img height="74" src="/images/icons/fa-comments.svg" width="74"/>
+<h3>Community</h3>
+<p>Get involved! Bug reporting, mailing list, chat, development and more.</p>
+</a>, <a href="/book">Pro Git</a>, <a href="/book">read online for free</a>, <a href="https://www.amazon.com/Pro-Git-Scott-Chacon/dp/1484200772?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1430218339&amp;linkCode=as2&amp;tag=git-sfconservancy-20">Amazon.com</a>, <a href="https://github.com/git/git/raw/HEAD/Documentation/RelNotes/2.51.1.adoc">Release Notes</a>, <a class="button" href="https://www.kernel.org/pub/software/scm/git/" id="download-link">Download Source Code</a>, <a class="icon gui" href="/downloads/guis" id="gui-link">Graphical UIs</a>, <a class="icon older-releases" href="https://www.kernel.org/pub/software/scm/git/">Tarballs</a>, <a class="icon windows" href="/install/windows" id="alt-link">Windows Build</a>, <a class="icon source" href="https://github.com/git/git">Source Code</a>, <a href="/site">About this site</a>, <a href="/sfc">Software Freedom Conservancy</a>
