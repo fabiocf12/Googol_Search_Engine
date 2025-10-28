@@ -4,9 +4,9 @@ import grpc
 import warnings
 
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
-from protos import index_pb2 as protos_dot_index__pb2
+import index_pb2 as index__pb2
 
-GRPC_GENERATED_VERSION = '1.75.1'
+GRPC_GENERATED_VERSION = '1.76.0'
 GRPC_VERSION = grpc.__version__
 _version_not_supported = False
 
@@ -19,7 +19,7 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + f' but the generated code in protos/index_pb2_grpc.py depends on'
+        + ' but the generated code in index_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
@@ -36,43 +36,21 @@ class IndexStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.takeNext = channel.unary_unary(
-                '/search.Index/takeNext',
-                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-                response_deserializer=protos_dot_index__pb2.TakeNextResponse.FromString,
-                _registered_method=True)
-        self.putNew = channel.unary_unary(
-                '/search.Index/putNew',
-                request_serializer=protos_dot_index__pb2.PutNewRequest.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                _registered_method=True)
         self.addToIndex = channel.unary_unary(
                 '/search.Index/addToIndex',
-                request_serializer=protos_dot_index__pb2.AddToIndexRequest.SerializeToString,
+                request_serializer=index__pb2.AddToIndexRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 _registered_method=True)
         self.searchWord = channel.unary_unary(
                 '/search.Index/searchWord',
-                request_serializer=protos_dot_index__pb2.SearchWordRequest.SerializeToString,
-                response_deserializer=protos_dot_index__pb2.SearchWordResponse.FromString,
+                request_serializer=index__pb2.SearchWordRequest.SerializeToString,
+                response_deserializer=index__pb2.SearchWordResponse.FromString,
                 _registered_method=True)
 
 
 class IndexServicer(object):
     """Index service definition
     """
-
-    def takeNext(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def putNew(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
 
     def addToIndex(self, request, context):
         """Missing associated documentation comment in .proto file."""
@@ -89,25 +67,15 @@ class IndexServicer(object):
 
 def add_IndexServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'takeNext': grpc.unary_unary_rpc_method_handler(
-                    servicer.takeNext,
-                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                    response_serializer=protos_dot_index__pb2.TakeNextResponse.SerializeToString,
-            ),
-            'putNew': grpc.unary_unary_rpc_method_handler(
-                    servicer.putNew,
-                    request_deserializer=protos_dot_index__pb2.PutNewRequest.FromString,
-                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            ),
             'addToIndex': grpc.unary_unary_rpc_method_handler(
                     servicer.addToIndex,
-                    request_deserializer=protos_dot_index__pb2.AddToIndexRequest.FromString,
+                    request_deserializer=index__pb2.AddToIndexRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'searchWord': grpc.unary_unary_rpc_method_handler(
                     servicer.searchWord,
-                    request_deserializer=protos_dot_index__pb2.SearchWordRequest.FromString,
-                    response_serializer=protos_dot_index__pb2.SearchWordResponse.SerializeToString,
+                    request_deserializer=index__pb2.SearchWordRequest.FromString,
+                    response_serializer=index__pb2.SearchWordResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -120,60 +88,6 @@ def add_IndexServicer_to_server(servicer, server):
 class Index(object):
     """Index service definition
     """
-
-    @staticmethod
-    def takeNext(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/search.Index/takeNext',
-            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            protos_dot_index__pb2.TakeNextResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def putNew(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/search.Index/putNew',
-            protos_dot_index__pb2.PutNewRequest.SerializeToString,
-            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
 
     @staticmethod
     def addToIndex(request,
@@ -190,7 +104,7 @@ class Index(object):
             request,
             target,
             '/search.Index/addToIndex',
-            protos_dot_index__pb2.AddToIndexRequest.SerializeToString,
+            index__pb2.AddToIndexRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options,
             channel_credentials,
@@ -217,8 +131,123 @@ class Index(object):
             request,
             target,
             '/search.Index/searchWord',
-            protos_dot_index__pb2.SearchWordRequest.SerializeToString,
-            protos_dot_index__pb2.SearchWordResponse.FromString,
+            index__pb2.SearchWordRequest.SerializeToString,
+            index__pb2.SearchWordResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+
+class GatewayStub(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.putNew = channel.unary_unary(
+                '/search.Gateway/putNew',
+                request_serializer=index__pb2.PutNewRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.takeNext = channel.unary_unary(
+                '/search.Gateway/takeNext',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=index__pb2.TakeNextResponse.FromString,
+                _registered_method=True)
+
+
+class GatewayServicer(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def putNew(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def takeNext(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_GatewayServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'putNew': grpc.unary_unary_rpc_method_handler(
+                    servicer.putNew,
+                    request_deserializer=index__pb2.PutNewRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'takeNext': grpc.unary_unary_rpc_method_handler(
+                    servicer.takeNext,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=index__pb2.TakeNextResponse.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'search.Gateway', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+    server.add_registered_method_handlers('search.Gateway', rpc_method_handlers)
+
+
+ # This class is part of an EXPERIMENTAL API.
+class Gateway(object):
+    """Missing associated documentation comment in .proto file."""
+
+    @staticmethod
+    def putNew(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/search.Gateway/putNew',
+            index__pb2.PutNewRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def takeNext(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/search.Gateway/takeNext',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            index__pb2.TakeNextResponse.FromString,
             options,
             channel_credentials,
             insecure,

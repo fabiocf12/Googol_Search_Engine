@@ -6,10 +6,13 @@ import "google/protobuf/empty.proto";
 
 // Index service definition
 service Index {
-    rpc takeNext (google.protobuf.Empty) returns (TakeNextResponse);
-    rpc putNew (PutNewRequest) returns (google.protobuf.Empty);
     rpc addToIndex (AddToIndexRequest) returns (google.protobuf.Empty);
     rpc searchWord (SearchWordRequest) returns (SearchWordResponse);
+}
+
+service Gateway {
+    rpc putNew (PutNewRequest) returns (google.protobuf.Empty);
+    rpc takeNext (google.protobuf.Empty) returns (TakeNextResponse);
 }
 
 message PutNewRequest {

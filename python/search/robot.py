@@ -1,7 +1,7 @@
 import grpc
 from google.protobuf import empty_pb2
-import protos.index_pb2 as index_pb2
-import protos.index_pb2_grpc as index_pb2_grpc
+import index_pb2 as index_pb2
+import index_pb2_grpc as index_pb2_grpc
 import requests
 from bs4 import BeautifulSoup as jsoup
 
@@ -10,10 +10,10 @@ from urllib.parse import urljoin
 
 def run():
     # Create a gRPC channel
-    channel = grpc.insecure_channel('localhost:8183')
+    channel = grpc.insecure_channel('localhost:8185')
     
     # Create a stub (client)
-    stub = index_pb2_grpc.IndexStub(channel)
+    stub = index_pb2_grpc.GatewayStub(channel)
     
     try:
         try:
