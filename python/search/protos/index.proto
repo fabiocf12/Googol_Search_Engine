@@ -13,6 +13,7 @@ service Index {
 service Gateway {
     rpc putNew (PutNewRequest) returns (google.protobuf.Empty);
     rpc takeNext (google.protobuf.Empty) returns (TakeNextResponse);
+    rpc searchWord (SearchWordRequest) returns (SearchWordResponse);
 }
 
 message PutNewRequest {
@@ -27,7 +28,7 @@ message AddToIndexRequest {
 
 // Messages for searchWord method
 message SearchWordRequest {
-    string word = 1;
+    repeated string words = 1;
 }
 message SearchWordResponse {
     repeated string urls = 1;

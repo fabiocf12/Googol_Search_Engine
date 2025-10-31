@@ -18,7 +18,24 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
             self.indexedItems[word].append(url)
             print(f"added url {url} to word {word}")
         return empty_pb2.Empty()
+    
+    def searchWord(self, request, context):
 
+        words = request.words
+        
+        sets = []
+        for w in words:
+            if w in self.indexedItems.keys():
+                sets.append(set(self.indexedItems[w]))
+
+        if not sets:  # no known words
+            print("#### no matches found")
+            return index_pb2.SearchWordResponse(urls=[])
+    
+        common_urls = set.intersection(*sets)
+        print("####", common_urls)
+
+        return index_pb2.SearchWordResponse(urls=common_urls)
     
 
 def serve():

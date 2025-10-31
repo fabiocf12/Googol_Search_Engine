@@ -13,12 +13,24 @@ def run():
 
     try:
         while True:
-            link_to_idx = input("Link to index (or q to exit):")
-            if link_to_idx == 'q':
+            next_command = input("L - link to index\nW - words to search\nQ - quit")
+            if next_command == 'q':
                 break
-            else:
+            elif next_command == "l":
+                link_to_idx = input("link: ")
                 stub.putNew(index_pb2.PutNewRequest(url=link_to_idx))
                 print(f"Submitted URL: {link_to_idx} to Gateway")
+            elif next_command == "w":
+                words = input("words: ")
+                words_list = words.split(" ")
+                try:
+                    result = stub.searchWord(index_pb2.SearchWordRequest(words=words_list))
+                    #print(f"Submitted WORDS: {words} to Gateway")
+                    print(f"got result: {result}")
+                except Exception as e:
+                    print(e)
+                    
+
             
                 
     except KeyboardInterrupt:

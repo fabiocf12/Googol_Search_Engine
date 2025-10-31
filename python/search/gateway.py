@@ -17,19 +17,21 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
         self.urlsToIndex.put("https://git-scm.com/")
         self.urlsseen.add("https://git-scm.com/")
 
+        channel_barrel = grpc.insecure_channel('localhost:8186')
+        self.stub_barrel = index_pb2_grpc.IndexStub(channel_barrel)
 
 
     def takeNext(self, request, context):
-        print("takeNext() called sending an URL")
+        #print("takeNext() called sending an URL")
         
         try:
             url = self.urlsToIndex.get_nowait()     #nowait or just get?
             
         except queue.Empty:
-            print("URL Queue empty - nothing to send!")
+            #print("URL Queue empty - nothing to send!")
             return index_pb2.TakeNextResponse(url="")
         
-        print(f"[GATEWAY] Sending URL : {url}")  
+        #print(f"[GATEWAY] Sending URL : {url}")  
         return index_pb2.TakeNextResponse(url=url)
 
     def putNew(self, request, context):
@@ -37,15 +39,25 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
         url = request.url
         
         if url in self.urlsseen:
-            print("URL already added\n")
+            ...#print("URL already added\n")
         else:
             self.urlsseen.add(url)    
             self.urlsToIndex.put(url)
             
-            print(f"putNew() called with URL: {url}")
+            #print(f"putNew() called with URL: {url}")
             
         return empty_pb2.Empty()
 
+    def searchWord(self, request, context):
+
+        words = request.words
+        try:
+            print(f"sent WORDS: {words} to storage barrel")
+            result = self.stub_barrel.searchWord(index_pb2.SearchWordRequest(words=words))
+        except Exception as e:
+            print(e)
+
+        return result
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
