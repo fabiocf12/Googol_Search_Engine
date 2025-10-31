@@ -21,7 +21,7 @@ message PutNewRequest {
 
 // Messages for addToIndex method
 message AddToIndexRequest {
-    string word = 1;
+    repeated string words = 1;
     string url = 2;
 }
 
