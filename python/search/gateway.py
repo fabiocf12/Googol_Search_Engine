@@ -15,8 +15,8 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
         self.lock = threading.Lock()
         
         
-        self.urlsToIndex.put("https://example.com") # https://git-scm.com/
-        self.urlsseen.add("https://example.com")
+        #self.urlsToIndex.put("https://example.com") # https://git-scm.com/
+        #self.urlsseen.add("https://example.com")
 
         ports = [8081, 8082, 8083]
         self.barrels = []
@@ -38,7 +38,7 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
             #print("URL Queue empty - nothing to send!")
             return index_pb2.TakeNextResponse(url="")
         
-        #print(f"[GATEWAY] Sending URL : {url}")  
+        print(f"[GATEWAY] Sending URL : {url}")  
         return index_pb2.TakeNextResponse(url=url)
 
     def putNew(self, request, context):
@@ -52,7 +52,7 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
                 self.urlsseen.add(url)    
                 self.urlsToIndex.put(url)  
                 
-                #print(f"putNew() called with URL: {url}")
+        print(f"putNew() called with URL: {url}")
             
         return empty_pb2.Empty()
 

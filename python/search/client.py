@@ -13,7 +13,8 @@ def run():
 
     try:
         while True:
-            next_command = input("L - link to index\nW - words to search\nQ - quit ")
+            next_command = input("\nL - link to index\nW - words to search\nP - Pages linking to this page\nQ - quit\n\nOption: ")
+            next_command = next_command.lower()
             
             if next_command == 'q':
                 break
@@ -25,13 +26,13 @@ def run():
                 
             elif next_command == "w": # submit words to search
                 
-                words = input("words: ")
+                words = input("words: ").lower()
                 words_list = words.split(" ")
                 
                 try:
                     result = stub.searchWord(index_pb2.SearchWordRequest(words=words_list))
                     #print(f"Submitted WORDS: {words} to Gateway")
-                    print(f"got result: {result}")
+                    print(f"got result: \n{result}")
                     
                 except Exception as e:
                     print(e)
@@ -41,7 +42,7 @@ def run():
                 
                 try:
                     result = stub.searchPage(index_pb2.SearchPageRequest(url=url))
-                    print(f"got result: {result}")
+                    print(f"got result: \n{result}")
                 except Exception as e:
                     print(e)
                 
