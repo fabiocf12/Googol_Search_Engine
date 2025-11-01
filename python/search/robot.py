@@ -40,7 +40,7 @@ def run():
                     abs_links = []
                     for link in link_list:
                         link = urljoin(url, link["href"])
-                        print("LINK:", link)
+                        #print("LINK:", link)
 
                         path = urlparse(link).path.lower()
                         if os.path.splitext(path)[1] in {".zip", ".tar", ".gz", ".xz", ".pdf", ".jpg", ".jpeg", ".png", ".gif", ".mp4", ".exe", ".iso", ".sign", ".bz2"}:

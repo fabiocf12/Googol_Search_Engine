@@ -5,14 +5,15 @@ import index_pb2_grpc as index_pb2_grpc
 from google.protobuf import empty_pb2
 import queue
 from bloom_filter2 import BloomFilter
+import threading
 
 
 class GatewayServicer(index_pb2_grpc.GatewayServicer):
     def __init__(self):
         self.urlsToIndex = queue.Queue()
         self.urlsseen = BloomFilter(max_elements=50_000_000, error_rate=0.01) #bloom filter instead of set
+        self.lock = threading.Lock()
         
-        #should we use a lock to access it via threads? 
         
         self.urlsToIndex.put("https://git-scm.com/")
         self.urlsseen.add("https://git-scm.com/")
@@ -44,13 +45,14 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
         
         url = request.url
         
-        if url in self.urlsseen:
-            ...#print("URL already added\n")
-        else:
-            self.urlsseen.add(url)    
-            self.urlsToIndex.put(url)
+        with self.lock:
             
-            #print(f"putNew() called with URL: {url}")
+            if url not in self.urlsseen:
+                
+                self.urlsseen.add(url)    
+                self.urlsToIndex.put(url)  
+                
+                #print(f"putNew() called with URL: {url}")
             
         return empty_pb2.Empty()
 
@@ -61,6 +63,7 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
             print(f"sent WORDS: {words} to storage barrel")
             result = self.barrels[self.round_robin_counter].searchWord(index_pb2.SearchWordRequest(words=words))
             self.round_robin_counter = (self.round_robin_counter + 1) % len(self.barrels)
+            
         except Exception as e:
             print(e)
 
