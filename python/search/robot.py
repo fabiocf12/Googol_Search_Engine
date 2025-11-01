@@ -44,7 +44,7 @@ def run():
 
                         path = urlparse(link).path.lower()
                         if os.path.splitext(path)[1] in {".zip", ".tar", ".gz", ".xz", ".pdf", ".jpg", ".jpeg", ".png", ".gif", ".mp4", ".exe", ".iso", ".sign", ".bz2"}:
-                            print("Skipping file type:", link)
+                            #print("Skipping file type:", link)
                             continue
                         
                         for stub_barrel in barrels:
