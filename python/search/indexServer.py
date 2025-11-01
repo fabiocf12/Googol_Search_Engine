@@ -26,7 +26,8 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
 
         if url_pointed not in self.pointedToBy:
             self.pointedToBy[url_pointed] = []
-        self.pointedToBy[url_pointed].append(url_that_points)
+        if url_that_points not in self.pointedToBy[url_pointed]:
+            self.pointedToBy[url_pointed].append(url_that_points)
         #print(f"added url {url_that_points} that points to {url_pointed}")
 
         return empty_pb2.Empty()
@@ -57,6 +58,11 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
 
         return index_pb2.SearchWordResponse(urls=common_urls)
     
+    def searchPage(self, request, context):
+        url = request.url
+        urls_that_point = self.pointedToBy.get(url, []) # gets list, on key error will default to []
+        
+        return index_pb2.SearchPageResponse(urls=urls_that_point)
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

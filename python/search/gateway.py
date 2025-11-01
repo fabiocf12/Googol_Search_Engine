@@ -58,6 +58,17 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
             print(e)
 
         return result
+    
+    def searchPage(self, request, context):
+
+        url = request.url
+        try:
+            print(f"sent URL: {url} to storage barrel")
+            result = self.stub_barrel.searchPage(index_pb2.SearchPageRequest(url=url))
+        except Exception as e:
+            print(e)
+
+        return result
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

@@ -8,14 +8,17 @@ import "google/protobuf/empty.proto";
 service Index {
     rpc addToIndex (AddToIndexRequest) returns (google.protobuf.Empty);
     rpc addToIndexPage (AddToIndexRequestPage) returns (google.protobuf.Empty);
-
     rpc searchWord (SearchWordRequest) returns (SearchWordResponse);
+    rpc searchPage (SearchPageRequest) returns (SearchPageResponse);
+
 }
 
 service Gateway {
     rpc putNew (PutNewRequest) returns (google.protobuf.Empty);
     rpc takeNext (google.protobuf.Empty) returns (TakeNextResponse);
     rpc searchWord (SearchWordRequest) returns (SearchWordResponse);
+    rpc searchPage (SearchPageRequest) returns (SearchPageResponse);
+
 }
 
 message PutNewRequest {
@@ -38,6 +41,14 @@ message SearchWordRequest {
     repeated string words = 1;
 }
 message SearchWordResponse {
+    repeated string urls = 1;
+}
+
+// Messages for searchPage method
+message SearchPageRequest {
+    string url = 1;
+}
+message SearchPageResponse {
     repeated string urls = 1;
 }
 
