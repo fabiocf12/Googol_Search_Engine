@@ -17,8 +17,14 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
         self.urlsToIndex.put("https://git-scm.com/")
         self.urlsseen.add("https://git-scm.com/")
 
-        channel_barrel = grpc.insecure_channel('localhost:8186')
-        self.stub_barrel = index_pb2_grpc.IndexStub(channel_barrel)
+        ports = [8081, 8082, 8083]
+        self.barrels = []
+        for port in ports:
+            channel_barrel = grpc.insecure_channel('localhost:{port}'.format(port=port))
+            stub_barrel = index_pb2_grpc.IndexStub(channel_barrel)
+            self.barrels.append(stub_barrel)
+
+        self.round_robin_counter = 0
 
 
     def takeNext(self, request, context):
@@ -53,7 +59,8 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
         words = request.words
         try:
             print(f"sent WORDS: {words} to storage barrel")
-            result = self.stub_barrel.searchWord(index_pb2.SearchWordRequest(words=words))
+            result = self.barrels[self.round_robin_counter].searchWord(index_pb2.SearchWordRequest(words=words))
+            self.round_robin_counter = (self.round_robin_counter + 1) % len(self.barrels)
         except Exception as e:
             print(e)
 
@@ -64,13 +71,17 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
         url = request.url
         try:
             print(f"sent URL: {url} to storage barrel")
-            result = self.stub_barrel.searchPage(index_pb2.SearchPageRequest(url=url))
+            result = self.barrels[self.round_robin_counter].searchPage(index_pb2.SearchPageRequest(url=url))
+            self.round_robin_counter = (self.round_robin_counter + 1) % len(self.barrels)
+
         except Exception as e:
             print(e)
 
         return result
 
 def serve():
+    print("I am the gateway")
+
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     index_pb2_grpc.add_GatewayServicer_to_server(GatewayServicer(), server)
     server_port = 8185

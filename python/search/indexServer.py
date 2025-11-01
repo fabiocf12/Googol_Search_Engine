@@ -3,6 +3,7 @@ import grpc
 import index_pb2 as index_pb2
 import index_pb2_grpc as index_pb2_grpc
 from google.protobuf import empty_pb2
+import argparse
 
 
 class IndexServicer(index_pb2_grpc.IndexServicer):
@@ -65,9 +66,15 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
         return index_pb2.SearchPageResponse(urls=list(urls_that_point))
 
 def serve():
+    print("I am an indexServer / storage barrel")
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     index_pb2_grpc.add_IndexServicer_to_server(IndexServicer(), server)
-    server_port = 8186
+
+    parser = argparse.ArgumentParser(description="description")
+    parser.add_argument('--port', type=int, default=8080, help='Port to run the server on')
+    args = parser.parse_args()
+
+    server_port = args.port
     server.add_insecure_port("0.0.0.0:{}".format(server_port))
     # server.add_insecure_port("[::]:{}".format(server_port))
     server.start()

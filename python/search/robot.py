@@ -15,10 +15,14 @@ def run():
     # Create a stub (client)
     stub_gateway = index_pb2_grpc.GatewayStub(channel_gateway)
 
-    # and one for communicating with the barrels
-    channel_barrel = grpc.insecure_channel('localhost:8186')
-    stub_barrel = index_pb2_grpc.IndexStub(channel_barrel)
-
+    ports = [8081, 8082, 8083]
+    barrels  = []
+    for port in ports:
+        # and one for communicating with the barrels
+        channel_barrel = grpc.insecure_channel('localhost:{port}'.format(port=port))
+        stub_barrel = index_pb2_grpc.IndexStub(channel_barrel)
+        barrels.append(stub_barrel)
+    
     while True:
         try:
             try:
@@ -43,7 +47,8 @@ def run():
                             print("Skipping file type:", link)
                             continue
                         
-                        stub_barrel.addToIndexPage(index_pb2.AddToIndexRequestPage(url_pointed=link, url_that_points=url))
+                        for stub_barrel in barrels:
+                            stub_barrel.addToIndexPage(index_pb2.AddToIndexRequestPage(url_pointed=link, url_that_points=url))
                         abs_links.append(link)
                     
                     
@@ -55,7 +60,8 @@ def run():
                     for link in abs_links:
                         stub_gateway.putNew(index_pb2.PutNewRequest(url=link))
 
-                    stub_barrel.addToIndex(index_pb2.AddToIndexRequest(url=url, words=page_text_tokenized))
+                    for stub_barrel in barrels:
+                        stub_barrel.addToIndex(index_pb2.AddToIndexRequest(url=url, words=page_text_tokenized))
 
                 except requests.RequestException as e:
                     print(f"Error fetching webpage: {e}")
@@ -70,4 +76,5 @@ def run():
             break
         
 if __name__ == '__main__':
+    print("I am a robot")
     run()
