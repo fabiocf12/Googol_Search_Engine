@@ -5,7 +5,8 @@ import index_pb2_grpc as index_pb2_grpc
 import requests
 from bs4 import BeautifulSoup as jsoup
 
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
+import os
 
 
 def run():
@@ -36,6 +37,13 @@ def run():
                     for link in link_list:
                         link = urljoin(url, link["href"])
                         print("LINK:", link)
+
+                        path = urlparse(link).path.lower()
+                        if os.path.splitext(path)[1] in {".zip", ".tar", ".gz", ".xz", ".pdf", ".jpg", ".jpeg", ".png", ".gif", ".mp4", ".exe", ".iso", ".sign", ".bz2"}:
+                            print("Skipping file type:", link)
+                            continue
+                        
+                        stub_barrel.addToIndexPage(index_pb2.AddToIndexRequestPage(url_pointed=link, url_that_points=url))
                         abs_links.append(link)
                     
                     

@@ -62,7 +62,7 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
         url = request.url
         urls_that_point = self.pointedToBy.get(url, []) # gets list, on key error will default to []
         
-        return index_pb2.SearchPageResponse(urls=urls_that_point)
+        return index_pb2.SearchPageResponse(urls=list(urls_that_point))
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
