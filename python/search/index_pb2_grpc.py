@@ -41,6 +41,11 @@ class IndexStub(object):
                 request_serializer=index__pb2.AddToIndexRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 _registered_method=True)
+        self.addToIndexPage = channel.unary_unary(
+                '/search.Index/addToIndexPage',
+                request_serializer=index__pb2.AddToIndexRequestPage.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
         self.searchWord = channel.unary_unary(
                 '/search.Index/searchWord',
                 request_serializer=index__pb2.SearchWordRequest.SerializeToString,
@@ -58,6 +63,12 @@ class IndexServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def addToIndexPage(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def searchWord(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -70,6 +81,11 @@ def add_IndexServicer_to_server(servicer, server):
             'addToIndex': grpc.unary_unary_rpc_method_handler(
                     servicer.addToIndex,
                     request_deserializer=index__pb2.AddToIndexRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'addToIndexPage': grpc.unary_unary_rpc_method_handler(
+                    servicer.addToIndexPage,
+                    request_deserializer=index__pb2.AddToIndexRequestPage.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'searchWord': grpc.unary_unary_rpc_method_handler(
@@ -105,6 +121,33 @@ class Index(object):
             target,
             '/search.Index/addToIndex',
             index__pb2.AddToIndexRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def addToIndexPage(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/search.Index/addToIndexPage',
+            index__pb2.AddToIndexRequestPage.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options,
             channel_credentials,

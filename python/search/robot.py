@@ -5,8 +5,8 @@ import index_pb2_grpc as index_pb2_grpc
 import requests
 from bs4 import BeautifulSoup as jsoup
 
-from urllib.parse import urljoin
-
+from urllib.parse import urljoin, urlparse
+import os
 
 def run():
     # Create a gRPC channel
@@ -27,8 +27,10 @@ def run():
                 print(f"Received URL: {url}")
                 
                 try:
+
                     # Fetch webpage using requests and parse with BeautifulSoup
                     response = requests.get(url)
+                    
                     response.raise_for_status()  # Raise an exception for bad status codes
                     soup = jsoup(response.text, 'html.parser')
 
@@ -38,6 +40,12 @@ def run():
                         link = urljoin(url, link["href"])
                         print("LINK:", link)
                         abs_links.append(link)
+
+                        path = urlparse(link).path.lower()
+                        if os.path.splitext(path)[1] in {".zip", ".tar", ".gz", ".xz", ".pdf", ".jpg", ".jpeg", ".png", ".gif", ".mp4", ".exe", ".iso", ".sign", ".bz2"}:
+                            print("Skipping file type:", link)
+                            continue
+                        stub_barrel.addToIndexPage(index_pb2.AddToIndexRequestPage(url_pointed=link, url_that_points=url))
 
                     page_text = soup.get_text()
                     page_text_tokenized = page_text.split()

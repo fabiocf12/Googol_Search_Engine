@@ -7,6 +7,8 @@ import "google/protobuf/empty.proto";
 // Index service definition
 service Index {
     rpc addToIndex (AddToIndexRequest) returns (google.protobuf.Empty);
+    rpc addToIndexPage (AddToIndexRequestPage) returns (google.protobuf.Empty);
+
     rpc searchWord (SearchWordRequest) returns (SearchWordResponse);
 }
 
@@ -24,6 +26,11 @@ message PutNewRequest {
 message AddToIndexRequest {
     repeated string words = 1;
     string url = 2;
+}
+
+message AddToIndexRequestPage {
+    string url_pointed = 1;
+    string url_that_points = 2;
 }
 
 // Messages for searchWord method

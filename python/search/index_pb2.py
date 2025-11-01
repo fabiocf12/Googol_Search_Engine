@@ -25,7 +25,7 @@ _sym_db = _symbol_database.Default()
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0bindex.proto\x12\x06search\x1a\x1bgoogle/protobuf/empty.proto\"\x1c\n\rPutNewRequest\x12\x0b\n\x03url\x18\x01 \x01(\t\"/\n\x11\x41\x64\x64ToIndexRequest\x12\r\n\x05words\x18\x01 \x03(\t\x12\x0b\n\x03url\x18\x02 \x01(\t\"\"\n\x11SearchWordRequest\x12\r\n\x05words\x18\x01 \x03(\t\"\"\n\x12SearchWordResponse\x12\x0c\n\x04urls\x18\x01 \x03(\t\"\x1f\n\x10TakeNextResponse\x12\x0b\n\x03url\x18\x01 \x01(\t2\x8d\x01\n\x05Index\x12?\n\naddToIndex\x12\x19.search.AddToIndexRequest\x1a\x16.google.protobuf.Empty\x12\x43\n\nsearchWord\x12\x19.search.SearchWordRequest\x1a\x1a.search.SearchWordResponse2\xc5\x01\n\x07Gateway\x12\x37\n\x06putNew\x12\x15.search.PutNewRequest\x1a\x16.google.protobuf.Empty\x12<\n\x08takeNext\x12\x16.google.protobuf.Empty\x1a\x18.search.TakeNextResponse\x12\x43\n\nsearchWord\x12\x19.search.SearchWordRequest\x1a\x1a.search.SearchWordResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0bindex.proto\x12\x06search\x1a\x1bgoogle/protobuf/empty.proto\"\x1c\n\rPutNewRequest\x12\x0b\n\x03url\x18\x01 \x01(\t\"/\n\x11\x41\x64\x64ToIndexRequest\x12\r\n\x05words\x18\x01 \x03(\t\x12\x0b\n\x03url\x18\x02 \x01(\t\"E\n\x15\x41\x64\x64ToIndexRequestPage\x12\x13\n\x0burl_pointed\x18\x01 \x01(\t\x12\x17\n\x0furl_that_points\x18\x02 \x01(\t\"\"\n\x11SearchWordRequest\x12\r\n\x05words\x18\x01 \x03(\t\"\"\n\x12SearchWordResponse\x12\x0c\n\x04urls\x18\x01 \x03(\t\"\x1f\n\x10TakeNextResponse\x12\x0b\n\x03url\x18\x01 \x01(\t2\xd6\x01\n\x05Index\x12?\n\naddToIndex\x12\x19.search.AddToIndexRequest\x1a\x16.google.protobuf.Empty\x12G\n\x0e\x61\x64\x64ToIndexPage\x12\x1d.search.AddToIndexRequestPage\x1a\x16.google.protobuf.Empty\x12\x43\n\nsearchWord\x12\x19.search.SearchWordRequest\x1a\x1a.search.SearchWordResponse2\xc5\x01\n\x07Gateway\x12\x37\n\x06putNew\x12\x15.search.PutNewRequest\x1a\x16.google.protobuf.Empty\x12<\n\x08takeNext\x12\x16.google.protobuf.Empty\x1a\x18.search.TakeNextResponse\x12\x43\n\nsearchWord\x12\x19.search.SearchWordRequest\x1a\x1a.search.SearchWordResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -36,14 +36,16 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_PUTNEWREQUEST']._serialized_end=80
   _globals['_ADDTOINDEXREQUEST']._serialized_start=82
   _globals['_ADDTOINDEXREQUEST']._serialized_end=129
-  _globals['_SEARCHWORDREQUEST']._serialized_start=131
-  _globals['_SEARCHWORDREQUEST']._serialized_end=165
-  _globals['_SEARCHWORDRESPONSE']._serialized_start=167
-  _globals['_SEARCHWORDRESPONSE']._serialized_end=201
-  _globals['_TAKENEXTRESPONSE']._serialized_start=203
-  _globals['_TAKENEXTRESPONSE']._serialized_end=234
-  _globals['_INDEX']._serialized_start=237
-  _globals['_INDEX']._serialized_end=378
-  _globals['_GATEWAY']._serialized_start=381
-  _globals['_GATEWAY']._serialized_end=578
+  _globals['_ADDTOINDEXREQUESTPAGE']._serialized_start=131
+  _globals['_ADDTOINDEXREQUESTPAGE']._serialized_end=200
+  _globals['_SEARCHWORDREQUEST']._serialized_start=202
+  _globals['_SEARCHWORDREQUEST']._serialized_end=236
+  _globals['_SEARCHWORDRESPONSE']._serialized_start=238
+  _globals['_SEARCHWORDRESPONSE']._serialized_end=272
+  _globals['_TAKENEXTRESPONSE']._serialized_start=274
+  _globals['_TAKENEXTRESPONSE']._serialized_end=305
+  _globals['_INDEX']._serialized_start=308
+  _globals['_INDEX']._serialized_end=522
+  _globals['_GATEWAY']._serialized_start=525
+  _globals['_GATEWAY']._serialized_end=722
 # @@protoc_insertion_point(module_scope)

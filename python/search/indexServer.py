@@ -8,6 +8,7 @@ from google.protobuf import empty_pb2
 class IndexServicer(index_pb2_grpc.IndexServicer):
     def __init__(self):
         self.indexedItems = {}
+        self.pointedToBy = {} # page : list of pages that point to it
 
     def addToIndex(self, request, context):
         url = request.url
@@ -16,7 +17,18 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
             if word not in self.indexedItems:
                 self.indexedItems[word] = []
             self.indexedItems[word].append(url)
-            print(f"added url {url} to word {word}")
+            #print(f"added url {url} to word {word}")
+        return empty_pb2.Empty()
+    
+    def addToIndexPage(self, request, context):
+        url_pointed = request.url_pointed
+        url_that_points = request.url_that_points
+
+        if url_pointed not in self.pointedToBy:
+            self.pointedToBy[url_pointed] = []
+        self.pointedToBy[url_pointed].append(url_that_points)
+        #print(f"added url {url_that_points} that points to {url_pointed}")
+
         return empty_pb2.Empty()
     
     def searchWord(self, request, context):
@@ -34,6 +46,14 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
     
         common_urls = set.intersection(*sets)
         print("####", common_urls)
+
+        common_urls = list(common_urls)
+
+        common_urls.sort(key=lambda x: len(self.pointedToBy[x]), reverse=True)
+
+        for url in common_urls:
+            print(url, len(self.pointedToBy[url]))
+            print(self.pointedToBy[url])
 
         return index_pb2.SearchWordResponse(urls=common_urls)
     
