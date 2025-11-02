@@ -1,12 +1,13 @@
 from concurrent import futures
 import grpc
+import sys
 import index_pb2 as index_pb2
 import index_pb2_grpc as index_pb2_grpc
 from google.protobuf import empty_pb2
 import argparse
 import time
 import random
-
+import json
 class IndexServicer(index_pb2_grpc.IndexServicer):
     def __init__(self):
         self.indexedItems = {}
@@ -83,22 +84,30 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
         except Exception as e:
             print("error in getstats")
         
-def serve():
-    print("I am an indexServer / storage barrel")
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    index_pb2_grpc.add_IndexServicer_to_server(IndexServicer(), server)
-
-    parser = argparse.ArgumentParser(description="description")
-    parser.add_argument('--port', type=int, default=8080, help='Port to run the server on')
-    args = parser.parse_args()
-
-    server_port = args.port
-    server.add_insecure_port("0.0.0.0:{}".format(server_port))
-    # server.add_insecure_port("[::]:{}".format(server_port))
-    server.start()
-    print("Server started on port {}".format(server_port))
+def serve(barrel_id):
     
+    print("I am an indexServer / storage barrel")
+    
+    with open("config.json") as f:
+        config = json.load(f)
+
+    barrels = config["barrels"]
+
+    host = barrels[barrel_id]["host"]
+    port = barrels[barrel_id]["port"]
+    
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    servicer = IndexServicer()
+    servicer.port = port  # necessário para getStats()
+    index_pb2_grpc.add_IndexServicer_to_server(servicer, server)
+
+    server.add_insecure_port(f"{host}:{port}")
+    server.start()
+    print(f" Barrel {barrel_id} started on {host}:{port}")
+
     server.wait_for_termination()
 
+
 if __name__ == "__main__":
-    serve()
+    barrel_id = int(sys.argv[1])
+    serve(barrel_id)

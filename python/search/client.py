@@ -3,14 +3,22 @@ from google.protobuf import empty_pb2
 import index_pb2 as index_pb2
 import index_pb2_grpc as index_pb2_grpc
 import requests
+import json
 
 def run():
-    # Create a gRPC channel
-    channel = grpc.insecure_channel('localhost:8185')
+
+    with open("config.json") as f:
+        config = json.load(f)
+
+    gateway_host = config["gateway"]["host"]
+    gateway_port = config["gateway"]["port"]
     
-    # Create a stub (client)
+    # Create a gRPC channel and client
+    channel = grpc.insecure_channel(f"{gateway_host}:{gateway_port}")
     stub = index_pb2_grpc.GatewayStub(channel)
 
+    print(f"Connected to Gateway at {gateway_host}:{gateway_port}")
+     
     try:
         while True:
             next_command = input("\nL - link to index\nW - words to search\nP - Pages linking to this page\nG - General Info system\nQ - quit\n\nOption: ")

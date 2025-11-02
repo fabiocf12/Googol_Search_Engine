@@ -8,28 +8,45 @@ from bloom_filter2 import BloomFilter
 import threading
 import time
 from collections import Counter
+import json
+
 
 class GatewayServicer(index_pb2_grpc.GatewayServicer):
+    
     def __init__(self):
         self.urlsToIndex = queue.Queue()
         self.urlsseen = BloomFilter(max_elements=50_000_000, error_rate=0.01) #bloom filter instead of set
         self.lock = threading.Lock()
-        self.stats = {}
         self.popular_searches = Counter()
+        self.stats = {}
         
+        #To begin with
         self.urlsToIndex.put("https://www.python.org/") # https://git-scm.com/
         self.urlsseen.add("https://www.python.org/")
 
-        self.ports = [8081, 8082, 8083]
-        self.barrels = []
-        for port in self.ports:
-            channel_barrel = grpc.insecure_channel('localhost:{port}'.format(port=port))
-            stub_barrel = index_pb2_grpc.IndexStub(channel_barrel)
-            self.barrels.append(stub_barrel)
+        with open("config.json") as f:
+            config = json.load(f)
+
+        self.gateway_host = config["gateway"]["host"]
+        self.gateway_port = config["gateway"]["port"]
+        self.barrel_configs = config["barrels"]
+
+        self.barrels = []  #stubs list
+        self.barrel_info = []  #info for round-robin and stats
+        
+        for barrel in self.barrel_configs:
+            host = barrel["host"]
+            port = barrel["port"]
+            barrel_id = f"{host}:{port}"
             
-            self.stats[port] = {}
-            self.stats[port]["times"] = []
-            self.stats[port]["num_entries"] = 0
+            #creat channel and client
+            channel_barrel = grpc.insecure_channel(f"{host}:{port}")
+            stub_barrel = index_pb2_grpc.IndexStub(channel_barrel)
+            
+            self.barrels.append(stub_barrel)
+            self.barrel_info.append({"host": host, "port": port, "id": barrel_id})
+            self.stats[barrel_id] = {"times": [], "num_entries": 0}
+            
 
         self.round_robin_counter = 0
 
@@ -63,7 +80,7 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
             
         return empty_pb2.Empty()
 
-    def searchWord(self, request, context):
+    def searchWord(self, request, context,attempts=0):
 
         words = request.words
         words = request.words
@@ -71,44 +88,73 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
         self.popular_searches[query_search] += 1
         
         start = time.time()
+        idx = self.round_robin_counter
+        info = self.barrel_info[idx]
+        stub = self.barrels[idx]
+        barrel_id = info["id"]
+
         try:
-            print(f"sent WORDS: {words} to storage barrel")
+            print(f"sent WORDS: {words} to storage barrel {barrel_id}")
             
-            result = self.barrels[self.round_robin_counter].searchWord(index_pb2.SearchWordRequest(words=words))
+            result = stub.searchWord(index_pb2.SearchWordRequest(words=words))
             elapsed = time.time() - start
-            port = self.ports[0] + (self.round_robin_counter % len(self.barrels))
-            self.stats[port]["times"].append(elapsed)
-            
-            self.round_robin_counter = (self.round_robin_counter + 1) % len(self.barrels)
+            self.stats[barrel_id]["times"].append(elapsed)
             
         except Exception as e:
-            print(e)
+            print(f"Error contacting {barrel_id}")
+            attempts += 1
+            
+            if attempts >= len(self.barrels):
+                print("Too many attemps. Aborting!")
+                return index_pb2.SearchWordResponse(urls=[])
+            
+            #tries on next barrel
+            self.round_robin_counter = (self.round_robin_counter + 1) % len(self.barrels)
+            return self.searchWord(request, context,attempts=attempts)
 
-        return result
+        else: # if everything good, move robin
+            self.round_robin_counter = (self.round_robin_counter + 1) % len(self.barrels)   
+            return result
     
-    def searchPage(self, request, context):
+    def searchPage(self, request, context,attempts=0):
 
         url = request.url
+        idx = self.round_robin_counter
+        info = self.barrel_info[idx]
+        stub = self.barrels[idx]
+        barrel_id = info["id"]
+        
         try:
             print(f"sent URL: {url} to storage barrel")
-            result = self.barrels[self.round_robin_counter].searchPage(index_pb2.SearchPageRequest(url=url))
-            self.round_robin_counter = (self.round_robin_counter + 1) % len(self.barrels)
+            result = stub.searchPage(index_pb2.SearchPageRequest(url=url))
 
         except Exception as e:
-            print(e)
-
-        return result
+            print(f"Error contacting {barrel_id}")
+            attempts += 1
+            
+            if attempts >= len(self.barrels):
+                print("Too many attemps. Aborting!")
+                return index_pb2.SearchPageResponse(urls=[])   
+            
+            #tries on next barrel
+            self.round_robin_counter = (self.round_robin_counter + 1) % len(self.barrels)
+            return self.searchPage(request, context,attempts=attempts)
+        
+        else:# if everything good, move robin
+            self.round_robin_counter = (self.round_robin_counter + 1) % len(self.barrels)
+            return result
     
     def getSystemStats(self, request, context):
         
         response = index_pb2.SystemStatsResponse()
         
-        for port, data in self.stats.items():
+        for info in self.barrel_info:
+            barrel_id = info["id"]
             
-            avg_time = sum(data['times']) / len(data['times']) if data['times'] else 0
-            
-            try:
-                channel = grpc.insecure_channel(f'localhost:{port}')
+            avg_time = sum(self.stats[barrel_id]["times"]) / len(self.stats[barrel_id]["times"]) if self.stats[barrel_id]["times"] else 0
+                
+            try: #connection with barrel
+                channel = grpc.insecure_channel(f'{info['host']}:{info['port']}')
                 stub = index_pb2_grpc.IndexStub(channel)
                 stat = stub.getStats(empty_pb2.Empty())
                 num_entries = stat.num_entries
@@ -117,7 +163,7 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
                 num_entries = -1  # offline
                 
             response.barrels.append(
-                index_pb2.BarrelStats(port=str(port), num_entries=num_entries, avg_search_time=avg_time)
+                index_pb2.BarrelStats(port=barrel_id, num_entries=num_entries, avg_search_time=avg_time)
             )
             
             
@@ -131,11 +177,16 @@ def serve():
 
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     index_pb2_grpc.add_GatewayServicer_to_server(GatewayServicer(), server)
-    server_port = 8185
-    server.add_insecure_port("0.0.0.0:{}".format(server_port))
-    # server.add_insecure_port("[::]:{}".format(server_port))
+    
+    with open("config.json") as f:
+        config = json.load(f)
+
+    gateway_host = config["gateway"]["host"]
+    gateway_port = config["gateway"]["port"]
+
+    server.add_insecure_port(f"{gateway_host}:{gateway_port}")
     server.start()
-    print("Server started on port {}".format(server_port))
+    print(f"Server started on {gateway_host}:{gateway_port}")
     
     server.wait_for_termination()
 

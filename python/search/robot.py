@@ -4,6 +4,7 @@ import index_pb2 as index_pb2
 import index_pb2_grpc as index_pb2_grpc
 import requests
 from bs4 import BeautifulSoup as jsoup
+import json
 
 from urllib.parse import urljoin, urlparse
 import os
@@ -31,16 +32,21 @@ def on_ack(fut, link, url, barrel, attempts):
 
     
 def run():
-    # Create a gRPC channel
-    channel_gateway = grpc.insecure_channel('localhost:8185')
-    # Create a stub (client)
+    
+    with open("config.json") as f:
+        config = json.load(f)
+
+    gateway_host = config["gateway"]["host"]
+    gateway_port = config["gateway"]["port"]
+    
+    # Create a gRPC channel and client
+    channel_gateway = grpc.insecure_channel(f"{gateway_host}:{gateway_port}")
     stub_gateway = index_pb2_grpc.GatewayStub(channel_gateway)
 
-    ports = [8081, 8082, 8083]
     barrels  = []
-    for port in ports:
+    for b in config["barrels"]:
         # and one for communicating with the barrels
-        channel_barrel = grpc.insecure_channel('localhost:{port}'.format(port=port))
+        channel_barrel = grpc.insecure_channel(f"{b['host']}:{b['port']}")
         stub_barrel = index_pb2_grpc.IndexStub(channel_barrel)
         barrels.append(stub_barrel)
     
