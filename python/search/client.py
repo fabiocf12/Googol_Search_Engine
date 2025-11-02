@@ -13,7 +13,7 @@ def run():
 
     try:
         while True:
-            next_command = input("\nL - link to index\nW - words to search\nP - Pages linking to this page\nQ - quit\n\nOption: ")
+            next_command = input("\nL - link to index\nW - words to search\nP - Pages linking to this page\nG - General Info system\nQ - quit\n\nOption: ")
             next_command = next_command.lower()
             
             if next_command == 'q':
@@ -45,6 +45,9 @@ def run():
                     print(f"got result: \n{result}")
                 except Exception as e:
                     print(e)
+                    
+            elif next_command == "g": #get general info
+                ()
                 
     except KeyboardInterrupt:
         print("\nStopping the robot...")

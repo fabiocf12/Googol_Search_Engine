@@ -13,11 +13,14 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
         self.pointedToBy = {} # page : list of pages that point to it
 
     def addToIndex(self, request, context):
+        
         if random.randint(0,200)==0:
             print("I decided to fail")
             time.sleep(6)
+            
         url = request.url
         words = request.words
+        
         for word in words:
             if word not in self.indexedItems:
                 self.indexedItems[word] = []
@@ -51,15 +54,14 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
             return index_pb2.SearchWordResponse(urls=[])
     
         common_urls = set.intersection(*sets)
-        print("####", common_urls)
 
         common_urls = list(common_urls)
 
         common_urls.sort(key=lambda x: len(self.pointedToBy[x]), reverse=True)
 
         for url in common_urls:
-            print(url, len(self.pointedToBy[url]))
-            print(self.pointedToBy[url])
+            print(f"{url} pointed by {len(self.pointedToBy[url])}")
+            print(f"POINTERS: {self.pointedToBy[url]}")
 
         return index_pb2.SearchWordResponse(urls=common_urls)
     

@@ -17,8 +17,7 @@ def on_ack(fut, link, url, barrel, attempts):
         return
     try:
         result = fut.result()  # raises if RPC failed
-        if attempts > 1:
-            print(f"ACK received for link={link} from url={url} after {attempts} attempts")
+        #print(f"ACK received for link={link} from url={url}")
         # cancel timer, mark success, etc.
     except grpc.RpcError as e:
         print(f"RPC failed for link={link} from url={url}. Attempts: {attempts}")
@@ -26,9 +25,9 @@ def on_ack(fut, link, url, barrel, attempts):
 
         future = barrel.addToIndexPage.future(
             index_pb2.AddToIndexRequestPage(url_pointed=link, url_that_points=url),
-            timeout=2.0*(attempts+1)  # seconds
+            timeout=5.0  # seconds
         )
-        add_callback(future, link, url, barrel, attempts+1)
+        add_callback(future, link, url, barrel, attempts + 1)
 
     
 def run():
@@ -72,13 +71,13 @@ def run():
                         for stub_barrel in barrels:
                             future = stub_barrel.addToIndexPage.future(
                                 index_pb2.AddToIndexRequestPage(url_pointed=link, url_that_points=url),
-                                timeout=2.0  # seconds
+                                timeout=5.0  # seconds
                             )
                             attempts = 1
                             future.add_done_callback(lambda fut, l=link, u=url, b=stub_barrel, a=attempts:
                                                                             on_ack(fut, l, u, b, a))
                         abs_links.append(link)
-                    
+                        
                     
                     page_text = soup.get_text()
                     page_text_tokenized = page_text.split()
