@@ -8,12 +8,38 @@ import argparse
 import time
 import random
 import json
+import pickle
+
 class IndexServicer(index_pb2_grpc.IndexServicer):
-    def __init__(self):
+    def __init__(self, barrel_id):
         self.indexedItems = {}
         self.pointedToBy = {} # page : list of pages that point to it
+        self.barrel_id = barrel_id
+        
+        # reload save
+        try:
+            with open(f"file1_barrel{barrel_id}.pkl", "rb") as f:
+                obj = pickle.load(f)
+        except:
+            obj = 0
+        
+        if obj:
+            self.indexedItems = obj
+        
+        try:
+            with open(f"file2_barrel{barrel_id}.pkl", "rb") as f:
+                obj = pickle.load(f)
+        except:
+            obj = 0
+        
+        if obj:
+            self.pointedToBy = obj
+
 
     def addToIndex(self, request, context):
+
+        with open(f"file1_barrel{barrel_id}.pkl", "wb") as f:
+            pickle.dump(self.indexedItems, f)
         
         if random.randint(0,200)==0:
             print("I decided to fail")
@@ -30,6 +56,10 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
         return empty_pb2.Empty()
     
     def addToIndexPage(self, request, context):
+
+        with open(f"file2_barrel{barrel_id}.pkl", "wb") as f:
+            pickle.dump(self.pointedToBy, f)
+
         url_pointed = request.url_pointed
         url_that_points = request.url_that_points
 
@@ -97,7 +127,7 @@ def serve(barrel_id):
     port = barrels[barrel_id]["port"]
     
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    servicer = IndexServicer()
+    servicer = IndexServicer(barrel_id)
     servicer.port = port  # necessário para getStats()
     index_pb2_grpc.add_IndexServicer_to_server(servicer, server)
 
