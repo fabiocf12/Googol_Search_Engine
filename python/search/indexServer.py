@@ -9,6 +9,7 @@ import time
 import random
 import json
 import pickle
+import threading
 
 class IndexServicer(index_pb2_grpc.IndexServicer):
     
@@ -17,10 +18,12 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
         self.pointedToBy = {} # page : list of pages that point to it
         self.pagesInfo = {} 
         self.barrel_id = barrel_id
-        
+        self.lock = threading.Lock()
+        self.last_step = 0
+
         # reload save
         try:
-            with open(f"file1_barrel{barrel_id}.pkl", "rb") as f:
+            with open(f"file1_barrel.pkl", "rb") as f:
                 obj = pickle.load(f)
         except:
             obj = 0
@@ -29,7 +32,7 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
             self.indexedItems = obj
         
         try:
-            with open(f"file2_barrel{barrel_id}.pkl", "rb") as f:
+            with open(f"file2_barrel.pkl", "rb") as f:
                 obj = pickle.load(f)
         except:
             obj = 0
@@ -37,7 +40,7 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
         if obj:
             self.pointedToBy = obj
         try:
-            with open(f"file3_barrel{barrel_id}.pkl", "rb") as f:
+            with open(f"file3_barrel.pkl", "rb") as f:
                 obj = pickle.load(f)
         except:
             obj = 0
@@ -47,16 +50,18 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
 
 
     def addToIndex(self, request, context):
-
-        with open(f"file1_barrel{barrel_id}.pkl", "wb") as f:
-            pickle.dump(self.indexedItems, f)
         
-        with open(f"file3_barrel{barrel_id}.pkl", "wb") as f:
-            pickle.dump(self.pagesInfo, f)
-            
-        if random.randint(0,200)==0:
-            print("I decided to fail")
-            time.sleep(6)
+        if len(self.indexedItems) > self.last_step + 100:
+            try:
+                with self.lock:
+                    with open(f"file1_barrel.pkl", "wb") as f:
+                        pickle.dump(self.indexedItems, f)
+                    
+                    with open(f"file3_barrel.pkl", "wb") as f:
+                        pickle.dump(self.pagesInfo, f)
+            except Exception as e:
+                print(e)
+        
             
         url = request.url
         words = request.words
@@ -73,10 +78,6 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
         return empty_pb2.Empty()
     
     def addToIndexPage(self, request, context):
-
-        with open(f"file2_barrel{barrel_id}.pkl", "wb") as f:
-            pickle.dump(self.pointedToBy, f)
-
         url_pointed = request.url_pointed
         url_that_points = request.url_that_points
 
@@ -89,6 +90,8 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
         return empty_pb2.Empty()
     
     def searchWord(self, request, context):
+
+        print("I was just used to search for a word")
 
         words = request.words
         
