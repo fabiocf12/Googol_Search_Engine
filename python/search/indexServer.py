@@ -116,7 +116,7 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
     def getStats(self, request, context):
         
         try:
-            #print(len(self.indexedItems))
+        
             return index_pb2.BarrelStats(
                 num_entries=len(self.indexedItems),
             )
