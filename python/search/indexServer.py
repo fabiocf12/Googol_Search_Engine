@@ -36,6 +36,14 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
         
         if obj:
             self.pointedToBy = obj
+        try:
+            with open(f"file3_barrel{barrel_id}.pkl", "rb") as f:
+                obj = pickle.load(f)
+        except:
+            obj = 0
+        
+        if obj:
+            self.pagesInfo = obj
 
 
     def addToIndex(self, request, context):
@@ -43,6 +51,9 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
         with open(f"file1_barrel{barrel_id}.pkl", "wb") as f:
             pickle.dump(self.indexedItems, f)
         
+        with open(f"file3_barrel{barrel_id}.pkl", "wb") as f:
+            pickle.dump(self.pagesInfo, f)
+            
         if random.randint(0,200)==0:
             print("I decided to fail")
             time.sleep(6)
