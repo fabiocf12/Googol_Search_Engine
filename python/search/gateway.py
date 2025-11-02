@@ -42,6 +42,7 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
             #creat channel and client
             channel_barrel = grpc.insecure_channel(f"{host}:{port}")
             stub_barrel = index_pb2_grpc.IndexStub(channel_barrel)
+            print(f"connected {port}")
             
             self.barrels.append(stub_barrel)
             self.barrel_info.append({"host": host, "port": port, "id": barrel_id})
@@ -154,7 +155,7 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
             avg_time = sum(self.stats[barrel_id]["times"]) / len(self.stats[barrel_id]["times"]) if self.stats[barrel_id]["times"] else 0
                 
             try: #connection with barrel
-                channel = grpc.insecure_channel(f'{info['host']}:{info['port']}')
+                channel = grpc.insecure_channel(f'{info["host"]}:{info["port"]}')
                 stub = index_pb2_grpc.IndexStub(channel)
                 stat = stub.getStats(empty_pb2.Empty())
                 num_entries = stat.num_entries
