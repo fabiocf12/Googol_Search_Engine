@@ -10,6 +10,7 @@ service Index {
     rpc addToIndexPage (AddToIndexRequestPage) returns (google.protobuf.Empty);
     rpc searchWord (SearchWordRequest) returns (SearchWordResponse);
     rpc searchPage (SearchPageRequest) returns (SearchPageResponse);
+    rpc getStats (google.protobuf.Empty) returns (BarrelStats);
 
 }
 
@@ -18,6 +19,7 @@ service Gateway {
     rpc takeNext (google.protobuf.Empty) returns (TakeNextResponse);
     rpc searchWord (SearchWordRequest) returns (SearchWordResponse);
     rpc searchPage (SearchPageRequest) returns (SearchPageResponse);
+    rpc getSystemStats (google.protobuf.Empty) returns (SystemStatsResponse);
 
 }
 
@@ -57,3 +59,13 @@ message TakeNextResponse {
 }
 
 
+message BarrelStats {
+    string port = 1;
+    int32 num_entries = 2;
+    double avg_search_time = 3;
+}
+
+message SystemStatsResponse {
+    repeated BarrelStats barrels = 1;
+    repeated string top_searches = 2;
+}

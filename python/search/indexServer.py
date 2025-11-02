@@ -48,6 +48,8 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
         for w in words:
             if w in self.indexedItems.keys():
                 sets.append(set(self.indexedItems[w]))
+            else:
+                return index_pb2.SearchWordResponse(urls=[])
 
         if not sets:  # no known words
             print("#### no matches found")
@@ -71,6 +73,16 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
         
         return index_pb2.SearchPageResponse(urls=list(urls_that_point))
 
+    def getStats(self, request, context):
+        
+        try:
+            #print(len(self.indexedItems))
+            return index_pb2.BarrelStats(
+                num_entries=len(self.indexedItems),
+            )
+        except Exception as e:
+            print("error in getstats")
+        
 def serve():
     print("I am an indexServer / storage barrel")
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

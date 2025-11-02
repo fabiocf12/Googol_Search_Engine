@@ -25,7 +25,7 @@ _sym_db = _symbol_database.Default()
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0bindex.proto\x12\x06search\x1a\x1bgoogle/protobuf/empty.proto\"\x1c\n\rPutNewRequest\x12\x0b\n\x03url\x18\x01 \x01(\t\"/\n\x11\x41\x64\x64ToIndexRequest\x12\r\n\x05words\x18\x01 \x03(\t\x12\x0b\n\x03url\x18\x02 \x01(\t\"E\n\x15\x41\x64\x64ToIndexRequestPage\x12\x13\n\x0burl_pointed\x18\x01 \x01(\t\x12\x17\n\x0furl_that_points\x18\x02 \x01(\t\"\"\n\x11SearchWordRequest\x12\r\n\x05words\x18\x01 \x03(\t\"\"\n\x12SearchWordResponse\x12\x0c\n\x04urls\x18\x01 \x03(\t\" \n\x11SearchPageRequest\x12\x0b\n\x03url\x18\x01 \x01(\t\"\"\n\x12SearchPageResponse\x12\x0c\n\x04urls\x18\x01 \x03(\t\"\x1f\n\x10TakeNextResponse\x12\x0b\n\x03url\x18\x01 \x01(\t2\x9b\x02\n\x05Index\x12?\n\naddToIndex\x12\x19.search.AddToIndexRequest\x1a\x16.google.protobuf.Empty\x12G\n\x0e\x61\x64\x64ToIndexPage\x12\x1d.search.AddToIndexRequestPage\x1a\x16.google.protobuf.Empty\x12\x43\n\nsearchWord\x12\x19.search.SearchWordRequest\x1a\x1a.search.SearchWordResponse\x12\x43\n\nsearchPage\x12\x19.search.SearchPageRequest\x1a\x1a.search.SearchPageResponse2\x8a\x02\n\x07Gateway\x12\x37\n\x06putNew\x12\x15.search.PutNewRequest\x1a\x16.google.protobuf.Empty\x12<\n\x08takeNext\x12\x16.google.protobuf.Empty\x1a\x18.search.TakeNextResponse\x12\x43\n\nsearchWord\x12\x19.search.SearchWordRequest\x1a\x1a.search.SearchWordResponse\x12\x43\n\nsearchPage\x12\x19.search.SearchPageRequest\x1a\x1a.search.SearchPageResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0bindex.proto\x12\x06search\x1a\x1bgoogle/protobuf/empty.proto\"\x1c\n\rPutNewRequest\x12\x0b\n\x03url\x18\x01 \x01(\t\"/\n\x11\x41\x64\x64ToIndexRequest\x12\r\n\x05words\x18\x01 \x03(\t\x12\x0b\n\x03url\x18\x02 \x01(\t\"E\n\x15\x41\x64\x64ToIndexRequestPage\x12\x13\n\x0burl_pointed\x18\x01 \x01(\t\x12\x17\n\x0furl_that_points\x18\x02 \x01(\t\"\"\n\x11SearchWordRequest\x12\r\n\x05words\x18\x01 \x03(\t\"\"\n\x12SearchWordResponse\x12\x0c\n\x04urls\x18\x01 \x03(\t\" \n\x11SearchPageRequest\x12\x0b\n\x03url\x18\x01 \x01(\t\"\"\n\x12SearchPageResponse\x12\x0c\n\x04urls\x18\x01 \x03(\t\"\x1f\n\x10TakeNextResponse\x12\x0b\n\x03url\x18\x01 \x01(\t\"I\n\x0b\x42\x61rrelStats\x12\x0c\n\x04port\x18\x01 \x01(\t\x12\x13\n\x0bnum_entries\x18\x02 \x01(\x05\x12\x17\n\x0f\x61vg_search_time\x18\x03 \x01(\x01\"Q\n\x13SystemStatsResponse\x12$\n\x07\x62\x61rrels\x18\x01 \x03(\x0b\x32\x13.search.BarrelStats\x12\x14\n\x0ctop_searches\x18\x02 \x03(\t2\xd4\x02\n\x05Index\x12?\n\naddToIndex\x12\x19.search.AddToIndexRequest\x1a\x16.google.protobuf.Empty\x12G\n\x0e\x61\x64\x64ToIndexPage\x12\x1d.search.AddToIndexRequestPage\x1a\x16.google.protobuf.Empty\x12\x43\n\nsearchWord\x12\x19.search.SearchWordRequest\x1a\x1a.search.SearchWordResponse\x12\x43\n\nsearchPage\x12\x19.search.SearchPageRequest\x1a\x1a.search.SearchPageResponse\x12\x37\n\x08getStats\x12\x16.google.protobuf.Empty\x1a\x13.search.BarrelStats2\xd1\x02\n\x07Gateway\x12\x37\n\x06putNew\x12\x15.search.PutNewRequest\x1a\x16.google.protobuf.Empty\x12<\n\x08takeNext\x12\x16.google.protobuf.Empty\x1a\x18.search.TakeNextResponse\x12\x43\n\nsearchWord\x12\x19.search.SearchWordRequest\x1a\x1a.search.SearchWordResponse\x12\x43\n\nsearchPage\x12\x19.search.SearchPageRequest\x1a\x1a.search.SearchPageResponse\x12\x45\n\x0egetSystemStats\x12\x16.google.protobuf.Empty\x1a\x1b.search.SystemStatsResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -48,8 +48,12 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_SEARCHPAGERESPONSE']._serialized_end=342
   _globals['_TAKENEXTRESPONSE']._serialized_start=344
   _globals['_TAKENEXTRESPONSE']._serialized_end=375
-  _globals['_INDEX']._serialized_start=378
-  _globals['_INDEX']._serialized_end=661
-  _globals['_GATEWAY']._serialized_start=664
-  _globals['_GATEWAY']._serialized_end=930
+  _globals['_BARRELSTATS']._serialized_start=377
+  _globals['_BARRELSTATS']._serialized_end=450
+  _globals['_SYSTEMSTATSRESPONSE']._serialized_start=452
+  _globals['_SYSTEMSTATSRESPONSE']._serialized_end=533
+  _globals['_INDEX']._serialized_start=536
+  _globals['_INDEX']._serialized_end=876
+  _globals['_GATEWAY']._serialized_start=879
+  _globals['_GATEWAY']._serialized_end=1216
 # @@protoc_insertion_point(module_scope)

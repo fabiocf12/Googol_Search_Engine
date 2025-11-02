@@ -56,6 +56,11 @@ class IndexStub(object):
                 request_serializer=index__pb2.SearchPageRequest.SerializeToString,
                 response_deserializer=index__pb2.SearchPageResponse.FromString,
                 _registered_method=True)
+        self.getStats = channel.unary_unary(
+                '/search.Index/getStats',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=index__pb2.BarrelStats.FromString,
+                _registered_method=True)
 
 
 class IndexServicer(object):
@@ -86,6 +91,12 @@ class IndexServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def getStats(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_IndexServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -108,6 +119,11 @@ def add_IndexServicer_to_server(servicer, server):
                     servicer.searchPage,
                     request_deserializer=index__pb2.SearchPageRequest.FromString,
                     response_serializer=index__pb2.SearchPageResponse.SerializeToString,
+            ),
+            'getStats': grpc.unary_unary_rpc_method_handler(
+                    servicer.getStats,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=index__pb2.BarrelStats.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -229,6 +245,33 @@ class Index(object):
             metadata,
             _registered_method=True)
 
+    @staticmethod
+    def getStats(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/search.Index/getStats',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            index__pb2.BarrelStats.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
 
 class GatewayStub(object):
     """Missing associated documentation comment in .proto file."""
@@ -259,6 +302,11 @@ class GatewayStub(object):
                 request_serializer=index__pb2.SearchPageRequest.SerializeToString,
                 response_deserializer=index__pb2.SearchPageResponse.FromString,
                 _registered_method=True)
+        self.getSystemStats = channel.unary_unary(
+                '/search.Gateway/getSystemStats',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=index__pb2.SystemStatsResponse.FromString,
+                _registered_method=True)
 
 
 class GatewayServicer(object):
@@ -288,6 +336,12 @@ class GatewayServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def getSystemStats(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_GatewayServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -310,6 +364,11 @@ def add_GatewayServicer_to_server(servicer, server):
                     servicer.searchPage,
                     request_deserializer=index__pb2.SearchPageRequest.FromString,
                     response_serializer=index__pb2.SearchPageResponse.SerializeToString,
+            ),
+            'getSystemStats': grpc.unary_unary_rpc_method_handler(
+                    servicer.getSystemStats,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=index__pb2.SystemStatsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -420,6 +479,33 @@ class Gateway(object):
             '/search.Gateway/searchPage',
             index__pb2.SearchPageRequest.SerializeToString,
             index__pb2.SearchPageResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def getSystemStats(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/search.Gateway/getSystemStats',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            index__pb2.SystemStatsResponse.FromString,
             options,
             channel_credentials,
             insecure,

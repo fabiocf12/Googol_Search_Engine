@@ -47,8 +47,23 @@ def run():
                     print(e)
                     
             elif next_command == "g": #get general info
-                ()
                 
+                try:
+                    result = stub.getSystemStats(empty_pb2.Empty())
+    
+                    print("Active barrels:")
+                    
+                    for b in result.barrels:
+                        if b.num_entries != -1:
+                            print(f" - {b.port}: {b.num_entries} entries, avg search time = {b.avg_search_time:.2f}s")
+                    
+                    print("\nTOP 10 SEARCHES")
+                    for i, search in enumerate(result.top_searches, start=1):
+                        print(f"{i}. {search}")
+                        
+                except Exception as e:
+                    print(e)
+                    
     except KeyboardInterrupt:
         print("\nStopping the robot...")
 
