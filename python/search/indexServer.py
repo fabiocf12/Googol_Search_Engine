@@ -56,11 +56,13 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
                 with self.lock:
                     with open(f"file1_barrel.pkl", "wb") as f:
                         pickle.dump(self.indexedItems, f)
-                    
+                    with open(f"file2_barrel.pkl", "wb") as f:
+                        pickle.dump(self.pointedToBy, f)
                     with open(f"file3_barrel.pkl", "wb") as f:
                         pickle.dump(self.pagesInfo, f)
             except Exception as e:
                 print(e)
+            self.last_step += 100
         
             
         url = request.url
