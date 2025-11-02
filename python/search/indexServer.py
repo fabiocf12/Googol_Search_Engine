@@ -4,7 +4,8 @@ import index_pb2 as index_pb2
 import index_pb2_grpc as index_pb2_grpc
 from google.protobuf import empty_pb2
 import argparse
-
+import time
+import random
 
 class IndexServicer(index_pb2_grpc.IndexServicer):
     def __init__(self):
@@ -12,6 +13,9 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
         self.pointedToBy = {} # page : list of pages that point to it
 
     def addToIndex(self, request, context):
+        if random.randint(0,200)==0:
+            print("I decided to fail")
+            time.sleep(6)
         url = request.url
         words = request.words
         for word in words:

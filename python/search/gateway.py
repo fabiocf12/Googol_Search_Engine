@@ -15,8 +15,8 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
         self.lock = threading.Lock()
         
         
-        #self.urlsToIndex.put("https://example.com") # https://git-scm.com/
-        #self.urlsseen.add("https://example.com")
+        self.urlsToIndex.put("https://www.python.org/") # https://git-scm.com/
+        self.urlsseen.add("https://www.python.org/")
 
         ports = [8081, 8082, 8083]
         self.barrels = []
@@ -46,11 +46,12 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
         url = request.url
         
         with self.lock:
-            
             if url not in self.urlsseen:
+                self.urlsseen.add(url) 
+            else:   
+                return empty_pb2.Empty()
                 
-                self.urlsseen.add(url)    
-                self.urlsToIndex.put(url)  
+        self.urlsToIndex.put(url)  
                 
         print(f"putNew() called with URL: {url}")
             
