@@ -31,6 +31,8 @@ message PutNewRequest {
 message AddToIndexRequest {
     repeated string words = 1;
     string url = 2;
+    string title = 3;
+    string snippet = 4;
 }
 
 message AddToIndexRequestPage {
@@ -42,8 +44,15 @@ message AddToIndexRequestPage {
 message SearchWordRequest {
     repeated string words = 1;
 }
+
+message SearchResult {
+    string url = 1;
+    string title = 2;
+    string snippet = 3;
+}
+
 message SearchWordResponse {
-    repeated string urls = 1;
+    repeated SearchResult results = 1;
 }
 
 // Messages for searchPage method

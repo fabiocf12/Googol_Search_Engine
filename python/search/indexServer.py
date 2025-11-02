@@ -12,7 +12,8 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
     def __init__(self):
         self.indexedItems = {}
         self.pointedToBy = {} # page : list of pages that point to it
-
+        self.pagesInfo = {} 
+        
     def addToIndex(self, request, context):
         
         if random.randint(0,200)==0:
@@ -21,12 +22,16 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
             
         url = request.url
         words = request.words
+        title = request.title
+        snippet = request.snippet
+        
+        self.pagesInfo[url] = {"title": title, "snippet": snippet}
         
         for word in words:
             if word not in self.indexedItems:
                 self.indexedItems[word] = []
             self.indexedItems[word].append(url)
-            #print(f"added url {url} to word {word}")
+            
         return empty_pb2.Empty()
     
     def addToIndexPage(self, request, context):
@@ -50,23 +55,26 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
             if w in self.indexedItems.keys():
                 sets.append(set(self.indexedItems[w]))
             else:
-                return index_pb2.SearchWordResponse(urls=[])
-
-        if not sets:  # no known words
-            print("#### no matches found")
-            return index_pb2.SearchWordResponse(urls=[])
+                return index_pb2.SearchWordResponse(results=[])
     
         common_urls = set.intersection(*sets)
-
         common_urls = list(common_urls)
-
         common_urls.sort(key=lambda x: len(self.pointedToBy[x]), reverse=True)
 
         for url in common_urls:
             print(f"{url} pointed by {len(self.pointedToBy[url])}")
             print(f"POINTERS: {self.pointedToBy[url]}")
 
-        return index_pb2.SearchWordResponse(urls=common_urls)
+        results = []
+        for url in common_urls:
+            info = self.pagesInfo.get(url, {})
+            results.append(index_pb2.SearchResult(
+                url=url,
+                title=info.get("title", "No title"),
+                snippet=info.get("snippet", "")
+            ))
+            
+        return index_pb2.SearchWordResponse(results=results)
     
     def searchPage(self, request, context):
         url = request.url

@@ -39,13 +39,12 @@ def run():
     gateway_host = config["gateway"]["host"]
     gateway_port = config["gateway"]["port"]
     
-    # Create a gRPC channel and client
+    # Create a gRPC channel and client to gateway
     channel_gateway = grpc.insecure_channel(f"{gateway_host}:{gateway_port}")
     stub_gateway = index_pb2_grpc.GatewayStub(channel_gateway)
 
     barrels  = []
-    for b in config["barrels"]:
-        # and one for communicating with the barrels
+    for b in config["barrels"]: # and one for communicating with the barrels
         channel_barrel = grpc.insecure_channel(f"{b['host']}:{b['port']}")
         stub_barrel = index_pb2_grpc.IndexStub(channel_barrel)
         barrels.append(stub_barrel)
@@ -85,19 +84,21 @@ def run():
                         abs_links.append(link)
                         
                     
+                    page_title = soup.title.string if soup.title else "No title"
                     page_text = soup.get_text()
                     page_text_tokenized = page_text.split()
                     page_text_tokenized = [word.lower() for word in page_text_tokenized]    
-                           
+                    page_snippet = " ".join(page_text_tokenized[:40])     
 
                     for link in abs_links:
                         stub_gateway.putNew(index_pb2.PutNewRequest(url=link))
 
                     for stub_barrel in barrels:
                         future = stub_barrel.addToIndex.future(
-                            index_pb2.AddToIndexRequest(url=url, words=page_text_tokenized),
-                            timeout=5.0  # seconds
-                        )
+                            index_pb2.AddToIndexRequest(url=url,words=page_text_tokenized,
+                                                        title=page_title,
+                                                        snippet=page_snippet),timeout=5.0  # seconds
+                                                        )
                         attempts = 1
                         future.add_done_callback(lambda fut, l=link, u=url, b=stub_barrel, a=attempts:
                                                 on_ack(fut, l, u, b, a))

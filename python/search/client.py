@@ -39,9 +39,22 @@ def run():
                 
                 try:
                     result = stub.searchWord(index_pb2.SearchWordRequest(words=words_list))
-                    #print(f"Submitted WORDS: {words} to Gateway")
-                    print(f"got result: \n{result}")
-                    
+                    results = result.results
+    
+                    if not results:
+                        print("Nothing found!")
+                    else:
+                        
+                        for i in range(0, len(results), 10):
+                            group = results[i:i+10]
+                            print(f"\n--- Results {i+1} to {i+len(group)}---")
+                            
+                            for r in group:
+                                print(f"• Title - {r.title}\n  URL - {r.url}\n  Snippet - {r.snippet}\n")
+                            
+                            if i + 10 < len(results):
+                                input("Click enter to see more...")
+
                 except Exception as e:
                     print(e)
                     
