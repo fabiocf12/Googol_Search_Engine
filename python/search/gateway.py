@@ -21,8 +21,8 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
         self.stats = {}
         
         #To begin with
-        self.urlsToIndex.put("https://eden.dei.uc.pt/~rbarbosa")
-        self.urlsseen.add("https://eden.dei.uc.pt/~rbarbosa")
+        #self.urlsToIndex.put("https://www.python.org/")
+        #self.urlsseen.add("https://www.python.org/")
         
         with open("config.json") as f:
             config = json.load(f)
