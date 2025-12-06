@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buttons with Input</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        .input-container {
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            width: 250px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="input-container">
+        <input type="text" id="userInput" placeholder="Type something...">
+    </div>
+    <div class="button-container">
+        <button onclick="sendRequest('index')">Index a link</button>
+        <button onclick="sendRequest('search')">Make a search</button>
+        <button onclick="sendRequest('page')">See pages pointing to a page</button>
+    </div>
+
+    <script>
+        function sendRequest(buttonId) {
+            const inputValue = document.getElementById('userInput').value;
+
+            fetch(`/${buttonId}?value=` + encodeURIComponent(inputValue))
+                .then(response => response.text())
+                .then(data => {
+                    console.log(data);
+                    alert(`Response from ${buttonId}: ${data}`);
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>
