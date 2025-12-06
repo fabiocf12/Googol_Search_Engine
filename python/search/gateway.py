@@ -21,9 +21,9 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
         self.stats = {}
         
         #To begin with
-        self.urlsToIndex.put("https://www.python.org/") # https://git-scm.com/
-        self.urlsseen.add("https://www.python.org/")
-
+        #self.urlsToIndex.put("https://www.python.org/")
+        #self.urlsseen.add("https://www.python.org/")
+        
         with open("config.json") as f:
             config = json.load(f)
 
@@ -107,7 +107,7 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
             
             if attempts >= len(self.barrels):
                 print("Too many attemps. Aborting!")
-                return index_pb2.SearchWordResponse(urls=[])
+                return index_pb2.SearchWordResponse(results=[])
             
             #tries on next barrel
             self.round_robin_counter = (self.round_robin_counter + 1) % len(self.barrels)

@@ -93,10 +93,9 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
     
     def searchWord(self, request, context):
 
-        print("I was just used to search for a word")
-
         words = request.words
-        
+        print(f"I was just used to search for a word {words}")
+
         sets = []
         for w in words:
             if w in self.indexedItems.keys():
@@ -106,11 +105,12 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
     
         common_urls = set.intersection(*sets)
         common_urls = list(common_urls)
-        common_urls.sort(key=lambda x: len(self.pointedToBy[x]), reverse=True)
+        common_urls.sort(key=lambda x: len(self.pointedToBy.get(x, [])), reverse=True)
 
         for url in common_urls:
-            print(f"{url} pointed by {len(self.pointedToBy[url])}")
-            print(f"POINTERS: {self.pointedToBy[url]}")
+            pts = self.pointedToBy.get(url, [])
+            print(f"{url} pointed by {len(pts)}")
+            print(f"POINTERS: {pts}")
 
         results = []
         for url in common_urls:

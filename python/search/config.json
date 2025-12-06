@@ -1,11 +1,11 @@
 {
   "gateway": {
-    "host": "localhost",
+    "host": "xxx.xxx.xxx.xxx",
     "port": 8185
   },
   "barrels": [
-    { "host": "localhost", "port": 8081 },
-    { "host": "localhost", "port": 8082 },
-    { "host": "localhost", "port": 8083 }
+    { "host": "xxx.xxx.xxx.xxx", "port": 8081 },
+    { "host": "yyy.yyy.yyy.yyy", "port": 8082 },
+    { "host": "yyy.yyy.yyy.yyy", "port": 8083 }
   ]
 }
