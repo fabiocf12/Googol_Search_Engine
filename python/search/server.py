@@ -25,8 +25,11 @@ gateway_host = config["gateway"]["host"]
 gateway_port = config["gateway"]["port"]
 
 # Create a gRPC channel and client
-channel = grpc.insecure_channel(f"{gateway_host}:{gateway_port}")
-stub = index_pb2_grpc.GatewayStub(channel)
+try:
+    channel = grpc.insecure_channel(f"{gateway_host}:{gateway_port}")
+    stub = index_pb2_grpc.GatewayStub(channel)
+except Exception as e:
+    print(e)
 
 print(f"Connected to Gateway at {gateway_host}:{gateway_port}")
 
@@ -37,13 +40,47 @@ def read_index():
     return FileResponse(os.path.join(static_dir, "index.html"))
 
 @app.get("/index")
-def button1(value: str):
-    return PlainTextResponse(f"You clicked index with input: {value}")
+def index_func(value: str):
+    try:
+        stub.putNew(index_pb2.PutNewRequest(url=value))
+    except:
+        pass
+    return PlainTextResponse(f"Submitted URL: {value} to Gateway")
 
 @app.get("/search")
-def button1(value: str):
-    return PlainTextResponse(f"You clicked search with input: {value}")
+def search_func(value: str):
+    words = value.lower()
+    words_list = words.split(" ")
+    
+    try:
+        result = stub.searchWord(index_pb2.SearchWordRequest(words=words_list))
+        results = result.results
+
+        send_back = ""
+        if not results:
+            send_back = "Nothing found!"
+        else:
+            i = 0 # for test only, needs a way to send more results as needed, possibly use session storage
+            group = results[i:i+10]
+            send_back = send_back + f"\n--- Results {i+1} to {i+len(group)}---"
+            
+            for r in group:
+                send_back = send_back + f"• Title - {r.title}\n  URL - {r.url}\n  Snippet - {r.snippet}\n"
+            
+            if i + 10 < len(results):
+                send_back = send_back + "Click enter to see more..."
+
+    except Exception as e: # sends back error, for debug
+        send_back = str(e)
+
+    return PlainTextResponse(send_back)
 
 @app.get("/page")
-def button1(value: str):
-    return PlainTextResponse(f"You clicked page with input: {value}")
+def page_func(value: str):
+    send_back = ""
+    try:
+        result = stub.searchPage(index_pb2.SearchPageRequest(url=value))
+        send_back = f"got result: \n{result}"
+    except Exception as e:
+        send_back = str(e)
+    return PlainTextResponse(send_back)

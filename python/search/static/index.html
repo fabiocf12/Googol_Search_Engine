@@ -22,7 +22,7 @@
         input[type="text"] {
             padding: 10px;
             font-size: 16px;
-            width: 250px;
+            width: 500px;
             border: 1px solid #ccc;
             border-radius: 5px;
         }
@@ -58,6 +58,10 @@
         <button onclick="sendRequest('page')">See pages pointing to a page</button>
     </div>
 
+    <div id="results">
+        <p>Results:</p>
+    </div>
+
     <script>
         function sendRequest(buttonId) {
             const inputValue = document.getElementById('userInput').value;
@@ -66,7 +70,8 @@
                 .then(response => response.text())
                 .then(data => {
                     console.log(data);
-                    alert(`Response from ${buttonId}: ${data}`);
+                    document.getElementById("results").innerHTML = "Results: <br>" + data;
+
                 })
                 .catch(error => console.error('Error:', error));
         }
