@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Search Results{% endblock %}
+
+{% block content %}
+<h2>Results for "{{ query }}"</h2>
+
+{% if error %}
+    <p style="color:red;">Error: {{ error }}</p>
+{% elif results %}
+    <ul>
+    {% for r in results %}
+        <li>
+            <strong>{{ r.title }}</strong><br>
+            <a href="{{ r.url }}">{{ r.url }}</a><br>
+            <small>{{ r.snippet }}</small>
+        </li>
+    {% endfor %}
+    </ul>
+
+    <!-- Paginação -->
+    <div class="pagination">
+        {% if page > 1 %}
+            <a href="/search?value={{ query }}&page={{ page - 1 }}">Previous</a>
+        {% endif %}
+
+        <span>Page {{ page }} of {{ total_pages }}</span>
+
+        {% if page < total_pages %}
+            <a href="/search?value={{ query }}&page={{ page + 1 }}">Next</a>
+        {% endif %}
+    </div>
+{% else %}
+    <p>No results found!</p>
+{% endif %}
+{% endblock %}

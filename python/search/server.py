@@ -1,6 +1,10 @@
 from fastapi import FastAPI
 from fastapi.responses import FileResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from fastapi import Request
+
 import os
 
 import grpc
@@ -12,12 +16,12 @@ import json
 
 app = FastAPI()
 
-static_dir = os.path.join(os.path.dirname(__file__), "static")
+templates = Jinja2Templates(directory="templates")
 
+static_dir = os.path.join(os.path.dirname(__file__), "static")
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 # grpc setup --
-
 with open("config.json") as f:
     config = json.load(f)
 
@@ -33,47 +37,48 @@ except Exception as e:
 
 print(f"Connected to Gateway at {gateway_host}:{gateway_port}")
 
-#--
 
-@app.get("/") # home route
-def read_index():
-    return FileResponse(os.path.join(static_dir, "index.html"))
 
-@app.get("/index")
-def index_func(value: str):
+@app.get("/",response_class=HTMLResponse) # home route
+def read_index(request: Request):
+    return templates.TemplateResponse("index.html",{"request":request})
+
+@app.get("/index",response_class=HTMLResponse)
+def index_func(request : Request, value: str):
+    
     try:
         stub.putNew(index_pb2.PutNewRequest(url=value))
-    except:
-        pass
-    return PlainTextResponse(f"Submitted URL: {value} to Gateway")
+        message = f"Submitted URL: {value} to Gateway"
+    except Exception as e:
+        message = str(e)
+        
+    return templates.TemplateResponse("message.html", {"request": request, "message": message})
 
 @app.get("/search")
-def search_func(value: str):
+def search_func(request: Request , value: str , page: int = 1):
     words = value.lower()
     words_list = words.split(" ")
+    error_message = None
     
     try:
         result = stub.searchWord(index_pb2.SearchWordRequest(words=words_list))
         results = result.results
-
-        send_back = ""
-        if not results:
-            send_back = "Nothing found!"
-        else:
-            i = 0 # for test only, needs a way to send more results as needed, possibly use session storage
-            group = results[i:i+10]
-            send_back = send_back + f"\n--- Results {i+1} to {i+len(group)}---"
             
-            for r in group:
-                send_back = send_back + f"• Title - {r.title}\n  URL - {r.url}\n  Snippet - {r.snippet}\n"
-            
-            if i + 10 < len(results):
-                send_back = send_back + "Click enter to see more..."
-
     except Exception as e: # sends back error, for debug
-        send_back = str(e)
-
-    return PlainTextResponse(send_back)
+        error_message = str(e)
+        
+    # Page by page
+    per_page = 10
+    start = (page - 1) * per_page
+    end = start + per_page
+    paginated_results = results[start:end]
+    
+    if len(results) % per_page > 0:
+        total_pages = len(results) // per_page + 1
+    else:
+        total_pages = len(results)// per_page
+    
+    return templates.TemplateResponse("results.html",{"request": request, "results": paginated_results, "query": value,"error": error_message,  "page": page, "total_pages": total_pages})
 
 @app.get("/page")
 def page_func(value: str):
