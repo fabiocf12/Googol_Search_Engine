@@ -1,4 +1,4 @@
-# Ignorar ficheiros de configuração sensíveis
+
 .env
 *.env
 __pycache__/

@@ -1,9 +1,10 @@
 from fastapi import FastAPI
-from fastapi.responses import FileResponse, PlainTextResponse
+from fastapi.responses import FileResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi import Request
+from fastapi import Form
 
 import os
 from groq import Groq
@@ -16,6 +17,8 @@ import requests
 import json
 
 from dotenv import load_dotenv
+
+from bs4 import BeautifulSoup
 
 app = FastAPI()
 
@@ -107,3 +110,38 @@ def generate_analysis(query: str):
     response = groq_client.chat.completions.create(model="llama-3.1-8b-instant", messages = [{"role": "user", "content":prompt}])
     
     return response.choices[0].message.content
+
+
+@app.post("/hackernews_index")
+def hackernews_index(request: Request, query: str = Form(...)):
+    
+    try:
+        top_ids = requests.get("https://hacker-news.firebaseio.com/v0/topstories.json").json()
+        added = 0
+
+        for story_id in top_ids[:50]: 
+            
+            story = requests.get(f"https://hacker-news.firebaseio.com/v0/item/{story_id}.json").json()
+            url = story.get("url")
+            
+            if url:
+                try:
+                    page = requests.get(url, timeout=5)
+                    soup = BeautifulSoup(page.text, "html.parser")
+                    text = soup.get_text().lower()
+                    if query.lower() in text:
+                        
+                        try:
+                            stub.putNew(index_pb2.PutNewRequest(url=url))
+                        except Exception as e:
+                            print(e)
+                            
+                        added += 1
+                except Exception:
+                    continue
+
+        msg = f"{added} stories from Hacker News added to the indexation!"
+    except Exception as e:
+        msg = f"Error integrating Hacker News: {str(e)}"
+
+    return templates.TemplateResponse("message.html",{"request": request, "message": msg})

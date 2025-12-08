@@ -36,6 +36,12 @@
     <h3>Contextual Analysis</h3>
     <p>{{ analysis }}</p>
 
+    <form action="/hackernews_index" method="post">
+        <input type="hidden" name="query" value="{{ query }}">
+        <button type="submit" class="hn-button">Indexar stories do Hacker News</button>
+    </form>
+    
+
 {% else %}
     <p>No results found!</p>
 {% endif %}

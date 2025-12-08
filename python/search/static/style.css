@@ -20,7 +20,7 @@ header form {
     margin-top: 10px;
     display: flex;
     justify-content: center;
-    gap: 15px; /* espaço entre os quadrados */
+    gap: 15px; 
 }
 
 .options a,button  {
@@ -32,12 +32,12 @@ header form {
     text-decoration: none;
     font-weight: bold;
     transition: background-color 0.2s, transform 0.1s;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* dá efeito de botão */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2); 
 }
 
 .options a:hover,button:hover {
     background-color: #0056b3;
-    transform: translateY(-2px); /* animação leve ao hover */
+    transform: translateY(-2px); 
 }
 
 
@@ -51,7 +51,7 @@ main {
 }
 
 footer {
-    text-align: center; /* centraliza o copyright */
+    text-align: center; 
     padding: 10px;
     background: #f0f0f0;
     color: #555;
@@ -100,4 +100,18 @@ button:hover {
 
 .back-home a:hover {
     background-color: #0056b3;
+}
+
+.pagination {
+    text-align: center;   /* centraliza o texto e links */
+    margin-top: 20px;     /* espaço acima */
+    font-weight: bold;    /* opcional: destacar */
+}
+.pagination a {
+    margin-left: 10px;    /* espaço entre o texto e o link */
+    color: blue;          /* cor do link */
+    text-decoration: none;
+}
+.pagination a:hover {
+    text-decoration: underline;
 }
