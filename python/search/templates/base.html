@@ -9,24 +9,37 @@
 <body>
     <header>
         <h1>Googol Search Engine</h1>
-        <form action="/search" method="get">
-            <input type="text" name="value" placeholder="Search...">
+        <!-- Barra de pesquisa -->
+        <form onsubmit="event.preventDefault(); redirectTo('search');">
+            <input type="text" id="userInput" name="value" placeholder="Search...">
             <button type="submit">Search</button>
         </form>
 
-        <!-- Opções como links -->
+        <!-- Opções -->
         <nav class="options">
-            <a href="/index">Index a link</a>
-            <a href="/page?value=">See pages pointing to a page</a>
+            <a href="#" onclick="redirectTo('index')">Index a link</a>
+            <a href="#" onclick="redirectTo('page')">See pages pointing to a page</a>
         </nav>
     </header>
 
     <main>
         {% block content %}{% endblock %}
+        {% block back_home %}{% endblock %}
     </main>
 
     <footer>
         <p>&copy; 2025 My Engine</p>
     </footer>
+
+    <script>
+        function redirectTo(action) {
+            const value = document.getElementById('userInput').value;
+            if (!value) {
+                alert("Please enter a value in the search bar first.");
+                return;
+            }
+            window.location.href = `/${action}?value=${encodeURIComponent(value)}`;
+        }
+    </script>
 </body>
 </html>

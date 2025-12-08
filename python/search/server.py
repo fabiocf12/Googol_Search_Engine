@@ -54,7 +54,7 @@ def index_func(request : Request, value: str):
         
     return templates.TemplateResponse("message.html", {"request": request, "message": message})
 
-@app.get("/search")
+@app.get("/search",response_class=HTMLResponse)
 def search_func(request: Request , value: str , page: int = 1):
     words = value.lower()
     words_list = words.split(" ")
@@ -80,7 +80,7 @@ def search_func(request: Request , value: str , page: int = 1):
     
     return templates.TemplateResponse("results.html",{"request": request, "results": paginated_results, "query": value,"error": error_message,  "page": page, "total_pages": total_pages})
 
-@app.get("/page")
+@app.get("/page",response_class=HTMLResponse)
 def page_func(value: str):
     send_back = ""
     try:

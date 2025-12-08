@@ -57,9 +57,6 @@ footer {
     color: #555;
 }
 
-.input-container {
-    margin-bottom: 20px;
-}
 
 input[type="text"] {
     padding: 10px;
@@ -69,10 +66,6 @@ input[type="text"] {
     border-radius: 5px;
 }
 
-.button-container {
-    display: flex;
-    gap: 20px;
-}
 
 button {
     padding: 10px 20px;
@@ -86,5 +79,25 @@ button {
 }
 
 button:hover {
+    background-color: #0056b3;
+}
+
+.back-home {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.back-home a {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.back-home a:hover {
     background-color: #0056b3;
 }
