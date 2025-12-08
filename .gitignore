@@ -1,0 +1,5 @@
+# Ignorar ficheiros de configuração sensíveis
+.env
+*.env
+__pycache__/
+*.pyc

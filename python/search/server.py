@@ -6,6 +6,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi import Request
 
 import os
+from openai import OpenAI
 
 import grpc
 from google.protobuf import empty_pb2
@@ -14,12 +15,20 @@ import index_pb2_grpc as index_pb2_grpc
 import requests
 import json
 
+from dotenv import load_dotenv
+
 app = FastAPI()
 
 templates = Jinja2Templates(directory="templates")
 
 static_dir = os.path.join(os.path.dirname(__file__), "static")
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
+# Load variables from .env
+load_dotenv()
+
+#Config OpenAI
+openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # grpc setup --
 with open("config.json") as f:
