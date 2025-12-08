@@ -7,6 +7,7 @@
 
 {% if error %}
     <p style="color:red;">Error: {{ error }}</p>
+
 {% elif results %}
     <ul>
     {% for r in results %}
@@ -30,9 +31,15 @@
             <a href="/search?value={{ query }}&page={{ page + 1 }}">Next</a>
         {% endif %}
     </div>
+
+    <!-- Groq analysis-->
+    <h3>Contextual Analysis</h3>
+    <p>{{ analysis }}</p>
+
 {% else %}
     <p>No results found!</p>
 {% endif %}
+
 {% endblock %}
 
 {% block back_home %}

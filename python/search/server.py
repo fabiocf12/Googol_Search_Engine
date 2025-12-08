@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi import Request
 
 import os
-from openai import OpenAI
+from groq import Groq
 
 import grpc
 from google.protobuf import empty_pb2
@@ -27,8 +27,8 @@ app.mount("/static", StaticFiles(directory=static_dir), name="static")
 # Load variables from .env
 load_dotenv()
 
-#Config OpenAI
-openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+#Config Groq client
+groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 # grpc setup --
 with open("config.json") as f:
@@ -87,7 +87,9 @@ def search_func(request: Request , value: str , page: int = 1):
     else:
         total_pages = len(results)// per_page
     
-    return templates.TemplateResponse("results.html",{"request": request, "results": paginated_results, "query": value,"error": error_message,  "page": page, "total_pages": total_pages})
+    analysis = generate_analysis(value)
+    
+    return templates.TemplateResponse("results.html",{"request": request, "results": paginated_results, "query": value,"error": error_message,  "page": page, "total_pages": total_pages,"analysis": analysis})
 
 @app.get("/page",response_class=HTMLResponse)
 def page_func(request: Request, value: str):
@@ -98,3 +100,10 @@ def page_func(request: Request, value: str):
         result = str(e)
         
     return templates.TemplateResponse("page.html",{"request": request, "results": result.urls, "query":value})
+
+def generate_analysis(query: str):
+    
+    prompt = f"O utilizador pesquisou por : {query}.\n\n Escreve uma análise contextualizada, resumindo as principais ideias!"
+    response = groq_client.chat.completions.create(model="llama-3.1-8b-instant", messages = [{"role": "user", "content":prompt}])
+    
+    return response.choices[0].message.content
