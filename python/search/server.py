@@ -20,6 +20,10 @@ from dotenv import load_dotenv
 
 from bs4 import BeautifulSoup
 from typing import Set
+from concurrent.futures import ThreadPoolExecutor
+import asyncio
+
+executor = ThreadPoolExecutor(max_workers=1)
 
 app = FastAPI()
 
@@ -41,6 +45,7 @@ with open("config.json") as f:
 gateway_host = config["gateway"]["host"]
 gateway_port = config["gateway"]["port"]
 
+
 # Create a gRPC channel and client
 try:
     channel = grpc.insecure_channel(f"{gateway_host}:{gateway_port}")
@@ -59,7 +64,12 @@ async def broadcast(message: str):
             await client.send_text(message)
         except:
             connected_clients.discard(client)
-            print("failed")
+            print("failed to send to client")
+
+def get_system_stats_sync():
+    # blocking call using the sync stub
+    return stub.getSystemStats(empty_pb2.Empty())
+
 
 @app.websocket("/my-websocket")
 async def websocket_endpoint(ws: WebSocket):
@@ -69,18 +79,14 @@ async def websocket_endpoint(ws: WebSocket):
     connected_clients.add(ws)
     try:
         while True:
-            result = stub.getSystemStats(empty_pb2.Empty())
-            '''print("Active barrels:")
-            
-            for b in result.barrels:
-                if b.num_entries != -1:
-                    print(f" - {b.port}: {b.num_entries} entries, avg search time = {b.avg_search_time:.2f}s")
-            
-            print("\nTOP 10 SEARCHES")
-            for i, search in enumerate(result.top_searches, start=1):
-                print(f"{i}. {search}")'''
+            loop = asyncio.get_event_loop()
+            # Run blocking gRPC call in thread
+            result = await loop.run_in_executor(executor, get_system_stats_sync)
 
-            await broadcast(str([b.port for b in result.barrels if b.num_entries != -1]))  # broadcast to all connected clients
+            msg = str([b.port for b in result.barrels if b.num_entries != -1])
+            await broadcast(msg)
+
+            await asyncio.sleep(1) 
     except Exception as e:
         print(e)
     finally:
