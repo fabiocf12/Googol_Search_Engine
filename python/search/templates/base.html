@@ -7,7 +7,29 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+
+    <script>
+        const socket = new WebSocket("ws://localhost:8000/my-websocket");
+
+        socket.onopen = () => {
+            console.log("Connected to the server");
+        };
+
+        socket.onmessage = (event) => {
+            console.log(event.data);
+            document.getElementById('barrels').textContent = event.data;
+
+        };
+
+        socket.onclose = () => {
+            socket.send("gone");
+        };
+
+    </script>
+
     <header>
+
+        <p id="barrels">---</p>
         <h1>Googol Search Engine</h1>
         <!-- Barra de pesquisa -->
         <form onsubmit="event.preventDefault(); redirectTo('search');">

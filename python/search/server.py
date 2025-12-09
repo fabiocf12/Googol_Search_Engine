@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi import Request
-from fastapi import Form
+from fastapi import Form, WebSocket
 
 import os
 from groq import Groq
@@ -19,6 +19,7 @@ import json
 from dotenv import load_dotenv
 
 from bs4 import BeautifulSoup
+from typing import Set
 
 app = FastAPI()
 
@@ -50,6 +51,42 @@ except Exception as e:
 print(f"Connected to Gateway at {gateway_host}:{gateway_port}")
 
 
+connected_clients: Set[WebSocket] = set()
+
+async def broadcast(message: str):
+    for client in connected_clients.copy():
+        try:
+            await client.send_text(message)
+        except:
+            connected_clients.discard(client)
+            print("failed")
+
+@app.websocket("/my-websocket")
+async def websocket_endpoint(ws: WebSocket):
+    await ws.accept()
+    print("just accepted a websocket")
+
+    connected_clients.add(ws)
+    try:
+        while True:
+            result = stub.getSystemStats(empty_pb2.Empty())
+            '''print("Active barrels:")
+            
+            for b in result.barrels:
+                if b.num_entries != -1:
+                    print(f" - {b.port}: {b.num_entries} entries, avg search time = {b.avg_search_time:.2f}s")
+            
+            print("\nTOP 10 SEARCHES")
+            for i, search in enumerate(result.top_searches, start=1):
+                print(f"{i}. {search}")'''
+
+            await broadcast(str([b.port for b in result.barrels if b.num_entries != -1]))  # broadcast to all connected clients
+    except Exception as e:
+        print(e)
+    finally:
+        connected_clients.discard(ws)
+        await ws.close()
+        print("they gone")
 
 @app.get("/",response_class=HTMLResponse) # home route
 def read_index(request: Request):
