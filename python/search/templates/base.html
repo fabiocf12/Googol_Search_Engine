@@ -12,7 +12,7 @@
 
         function connect() {
 
-            const socket = new WebSocket("ws://10.42.252.40:8000/my-websocket");
+            const socket = new WebSocket("ws://localhost:8000/my-websocket");
             socket.onopen = () => {
                 console.log("Connected to the server");
                 const status = document.getElementById("stats_status");
@@ -88,19 +88,19 @@
 
     <section id="stats">
         <h4 id="stats_status"></h4>
-        <h4>Active Barrels</h4>
+        <h4>Active Barrels: </h4>
         <table id="barrels-table">
             <thead>
                 <tr>
                     <th>Port</th>
                     <th># Entries</th>
-                    <th>Avg Search Time (s)</th>
+                    <th>Avg Search Time(s)</th>
                 </tr>
             </thead>
             <tbody></tbody>
-        </table>
+        </table>    
 
-        <h4>Top 10 Searches</h4>
+        <h4>Top 10 Searches :</h4>
         <ol id="top-searches"></ol>
     </section>
 

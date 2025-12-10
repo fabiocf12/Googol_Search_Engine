@@ -160,6 +160,7 @@ def page_func(request: Request, value: str):
         result = stub.searchPage(index_pb2.SearchPageRequest(url=value))
     except Exception as e:
         result = str(e)
+        return templates.TemplateResponse("error.html",{"request": request, "error": result})
         
     return templates.TemplateResponse("page.html",{"request": request, "results": result.urls, "query":value})
 
@@ -168,6 +169,7 @@ def generate_analysis(query: str, results):
     result_str = str([result.snippet + "\n\n" for result in results[:4]])
     
     prompt = f"O utilizador pesquisou por : {query}.\n\n Os resultados são {result_str}. Escreve uma análise contextualizada, resumindo as principais ideias!"
+    
     try:
         response = groq_client.chat.completions.create(model="llama-3.1-8b-instant", messages = [{"role": "user", "content":prompt}])
     except:

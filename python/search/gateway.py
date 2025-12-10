@@ -20,9 +20,6 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
         self.popular_searches = Counter()
         self.stats = {}
         
-        #To begin with
-        #self.urlsToIndex.put("https://www.python.org/")
-        #self.urlsseen.add("https://www.python.org/")
         
         with open("config.json") as f:
             config = json.load(f)
