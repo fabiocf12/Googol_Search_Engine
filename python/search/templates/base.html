@@ -16,7 +16,7 @@
             socket.onopen = () => {
                 console.log("Connected to the server");
                 const status = document.getElementById("stats_status");
-                status.innerHTML="<h4> Status: on <h4>";
+                status.innerHTML="</h4> Status: on </h4>";
             };
 
             socket.onmessage = (event) => {
@@ -54,7 +54,7 @@
                 console.log("Connection closed, retrying in 1s...");
                 setTimeout(connect, 1000);  // try to reconnect after 1 second     ~
                 const status = document.getElementById("stats_status");
-                status.innerHTML="<h4> Status: down <h4>";   
+                status.innerHTML="</h4> Status: down </h4>";   
             };
 
         }

@@ -66,7 +66,7 @@ async def broadcast(message: str):
             await client.send_text(message)
         except:
             connected_clients.discard(client)
-            print("failed to send to client")
+            print("failed to send to client",client)
 
 def get_system_stats_sync():
     # blocking call using the sync stub
@@ -187,25 +187,24 @@ def hackernews_index(request: Request, query: str = Form(...)):
         added = 0
 
         for story_id in top_ids[:50]: 
-            print(added)
-            
+
             story = requests.get(f"https://hacker-news.firebaseio.com/v0/item/{story_id}.json").json()
             url = story.get("url")
             if url:
                 try:
-                    start = time.time()
+                    
                     page = requests.get(url, timeout=5)
                     soup = BeautifulSoup(page.text, "html.parser")
                     text = soup.get_text().lower()
-                    print(time.time() - start)
+
                     if query.lower() in text:
-                        
+                        print(f"{query} is in the link {url} and id if {story_id}")
                         try:
                             stub.putNew(index_pb2.PutNewRequest(url=url))
+                            added += 1
                         except Exception as e:
                             print(e)
                             
-                        added += 1
                 except Exception:
                     continue
 
