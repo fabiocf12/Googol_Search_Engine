@@ -9,42 +9,58 @@
 <body>
 
     <script>
-        const socket = new WebSocket("ws://localhost:8000/my-websocket");
 
-        socket.onopen = () => {
-            console.log("Connected to the server");
-        };
+        function connect() {
 
-        socket.onmessage = (event) => {
-            const data = JSON.parse(event.data);
+            const socket = new WebSocket("ws://localhost:8000/my-websocket");
+            socket.onopen = () => {
+                console.log("Connected to the server");
+                const status = document.getElementById("stats_status");
+                status.innerHTML="<h4> Status: on <h4>";
+            };
 
-            // fill barrels table with cells
-            const barrelsBody = document.querySelector("#barrels-table tbody");
-            barrelsBody.innerHTML = "";
-            data.barrels.forEach(b => {
-                const row = document.createElement("tr");
-                row.innerHTML = `
-                    <td>${b.port}</td>
-                    <td>${b.num_entries}</td>
-                    <td>${b.avg_search_time.toFixed(2)}</td>
-                `;
-                barrelsBody.appendChild(row);
-            });
+            socket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
 
-            // put ordered top searches in list
-            const topSearches = document.getElementById("top-searches");
-            topSearches.innerHTML = "";
-            data.top_searches.forEach(s => {
-                const li = document.createElement("li");
-                li.textContent = s;
-                topSearches.appendChild(li);
-            });
+                // fill barrels table with cells
+                const barrelsBody = document.querySelector("#barrels-table tbody");
+                barrelsBody.innerHTML = "";
+                data.barrels.forEach(b => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${b.port}</td>
+                        <td>${b.num_entries}</td>
+                        <td>${b.avg_search_time.toFixed(2)}</td>
+                    `;
+                    barrelsBody.appendChild(row);
+                });
 
-        };
+                // put ordered top searches in list
+                const topSearches = document.getElementById("top-searches");
+                topSearches.innerHTML = "";
+                data.top_searches.forEach(s => {
+                    const li = document.createElement("li");
+                    li.textContent = s;
+                    topSearches.appendChild(li);
+                });
 
-        socket.onclose = () => {
-            socket.send("gone");
-        };
+            };
+
+            socket.onclose = () => {
+                const barrelsBody = document.querySelector("#barrels-table tbody");
+                barrelsBody.innerHTML = "";
+                const topSearches = document.getElementById("top-searches");
+                topSearches.innerHTML = "";
+                console.log("Connection closed, retrying in 1s...");
+                setTimeout(connect, 1000);  // try to reconnect after 1 second     ~
+                const status = document.getElementById("stats_status");
+                status.innerHTML="<h4> Status: down <h4>";   
+            };
+
+        }
+
+        connect();
+        
 
     </script>
 
@@ -69,6 +85,7 @@
     </main>
 
     <section id="stats">
+        <h4 id="stats_status"></h4>
         <h4>Active Barrels</h4>
         <table id="barrels-table">
             <thead>

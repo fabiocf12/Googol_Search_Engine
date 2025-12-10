@@ -98,8 +98,6 @@ async def websocket_endpoint(ws: WebSocket):
         print(e)
     finally:
         connected_clients.discard(ws)
-        await ws.close()
-        print("they gone")
 
 @app.get("/",response_class=HTMLResponse) # home route
 def read_index(request: Request):
@@ -128,7 +126,9 @@ def search_func(request: Request , value: str , page: int = 1):
             
     except Exception as e: # sends back error, for debug
         error_message = str(e)
-        
+        return templates.TemplateResponse("error.html",{"request": request, "error": error_message})
+
+    
     # Page by page
     per_page = 10
     start = (page - 1) * per_page
