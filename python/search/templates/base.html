@@ -16,8 +16,29 @@
         };
 
         socket.onmessage = (event) => {
-            console.log(event.data);
-            document.getElementById('barrels').textContent = event.data;
+            const data = JSON.parse(event.data);
+
+            // fill barrels table with cells
+            const barrelsBody = document.querySelector("#barrels-table tbody");
+            barrelsBody.innerHTML = "";
+            data.barrels.forEach(b => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${b.port}</td>
+                    <td>${b.num_entries}</td>
+                    <td>${b.avg_search_time.toFixed(2)}</td>
+                `;
+                barrelsBody.appendChild(row);
+            });
+
+            // put ordered top searches in list
+            const topSearches = document.getElementById("top-searches");
+            topSearches.innerHTML = "";
+            data.top_searches.forEach(s => {
+                const li = document.createElement("li");
+                li.textContent = s;
+                topSearches.appendChild(li);
+            });
 
         };
 
@@ -28,8 +49,6 @@
     </script>
 
     <header>
-
-        <p id="barrels">---</p>
         <h1>Googol Search Engine</h1>
         <!-- Barra de pesquisa -->
         <form onsubmit="event.preventDefault(); redirectTo('search');">
@@ -48,6 +67,23 @@
         {% block content %}{% endblock %}
         {% block back_home %}{% endblock %}
     </main>
+
+    <section id="stats">
+        <h4>Active Barrels</h4>
+        <table id="barrels-table">
+            <thead>
+                <tr>
+                    <th>Port</th>
+                    <th># Entries</th>
+                    <th>Avg Search Time (s)</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <h4>Top 10 Searches</h4>
+        <ol id="top-searches"></ol>
+    </section>
 
     <footer>
         <p>&copy; 2025 My Engine</p>

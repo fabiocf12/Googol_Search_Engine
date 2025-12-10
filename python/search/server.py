@@ -23,6 +23,8 @@ from typing import Set
 from concurrent.futures import ThreadPoolExecutor
 import asyncio
 
+import time
+
 executor = ThreadPoolExecutor(max_workers=1)
 
 app = FastAPI()
@@ -83,7 +85,12 @@ async def websocket_endpoint(ws: WebSocket):
             # Run blocking gRPC call in thread
             result = await loop.run_in_executor(executor, get_system_stats_sync)
 
-            msg = str([b.port for b in result.barrels if b.num_entries != -1])
+            barrels_dict = [
+                {"port": b.port, "num_entries": b.num_entries, "avg_search_time": b.avg_search_time}
+                  for b in result.barrels if b.num_entries != -1]
+            top_searches = list(result.top_searches)
+
+            msg = json.dumps({"barrels": barrels_dict, "top_searches": top_searches})
             await broadcast(msg)
 
             await asyncio.sleep(1) 
@@ -163,12 +170,14 @@ def hackernews_index(request: Request, query: str = Form(...)):
         added = 0
 
         for story_id in top_ids[:50]: 
+            print(added)
             
             story = requests.get(f"https://hacker-news.firebaseio.com/v0/item/{story_id}.json").json()
             url = story.get("url")
             
             if url:
                 try:
+
                     page = requests.get(url, timeout=5)
                     soup = BeautifulSoup(page.text, "html.parser")
                     text = soup.get_text().lower()
