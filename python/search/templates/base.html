@@ -12,7 +12,7 @@
 
         function connect() {
 
-            const socket = new WebSocket("ws://localhost:8000/my-websocket");
+            const socket = new WebSocket("ws://10.42.252.40:8000/my-websocket");
             socket.onopen = () => {
                 console.log("Connected to the server");
                 const status = document.getElementById("stats_status");

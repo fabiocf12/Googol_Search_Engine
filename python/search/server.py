@@ -70,8 +70,12 @@ async def broadcast(message: str):
 
 def get_system_stats_sync():
     # blocking call using the sync stub
-    return stub.getSystemStats(empty_pb2.Empty())
+    try:
+        result =  stub.getSystemStats(empty_pb2.Empty())
+    except:
+        result = ""
 
+    return result
 
 @app.websocket("/my-websocket")
 async def websocket_endpoint(ws: WebSocket):
@@ -84,6 +88,10 @@ async def websocket_endpoint(ws: WebSocket):
             loop = asyncio.get_event_loop()
             # Run blocking gRPC call in thread
             result = await loop.run_in_executor(executor, get_system_stats_sync)
+
+            if result == "":
+                await asyncio.sleep(1) 
+                continue
 
             barrels_dict = [
                 {"port": b.port, "num_entries": b.num_entries, "avg_search_time": b.avg_search_time}
@@ -109,9 +117,11 @@ def index_func(request : Request, value: str):
     try:
         stub.putNew(index_pb2.PutNewRequest(url=value))
         message = f"Submitted URL: {value} to Gateway"
+
     except Exception as e:
         message = str(e)
-        
+        return templates.TemplateResponse("error.html", {"request": request, "message": message})
+
     return templates.TemplateResponse("message.html", {"request": request, "message": message})
 
 @app.get("/search",response_class=HTMLResponse)
@@ -127,7 +137,6 @@ def search_func(request: Request , value: str , page: int = 1):
     except Exception as e: # sends back error, for debug
         error_message = str(e)
         return templates.TemplateResponse("error.html",{"request": request, "error": error_message})
-
     
     # Page by page
     per_page = 10
@@ -140,7 +149,7 @@ def search_func(request: Request , value: str , page: int = 1):
     else:
         total_pages = len(results)// per_page
     
-    analysis = generate_analysis(value)
+    analysis = generate_analysis(value, results)
     
     return templates.TemplateResponse("results.html",{"request": request, "results": paginated_results, "query": value,"error": error_message,  "page": page, "total_pages": total_pages,"analysis": analysis})
 
@@ -154,11 +163,17 @@ def page_func(request: Request, value: str):
         
     return templates.TemplateResponse("page.html",{"request": request, "results": result.urls, "query":value})
 
-def generate_analysis(query: str):
+def generate_analysis(query: str, results):
+
+    result_str = str([result.snippet + "\n\n" for result in results[:4]])
     
-    prompt = f"O utilizador pesquisou por : {query}.\n\n Escreve uma análise contextualizada, resumindo as principais ideias!"
-    response = groq_client.chat.completions.create(model="llama-3.1-8b-instant", messages = [{"role": "user", "content":prompt}])
-    
+    prompt = f"O utilizador pesquisou por : {query}.\n\n Os resultados são {result_str}. Escreve uma análise contextualizada, resumindo as principais ideias!"
+    try:
+        response = groq_client.chat.completions.create(model="llama-3.1-8b-instant", messages = [{"role": "user", "content":prompt}])
+    except:
+        return "AI overview couldn't be reached"
+
+    print(prompt)
     return response.choices[0].message.content
 
 
@@ -174,13 +189,13 @@ def hackernews_index(request: Request, query: str = Form(...)):
             
             story = requests.get(f"https://hacker-news.firebaseio.com/v0/item/{story_id}.json").json()
             url = story.get("url")
-            
             if url:
                 try:
-
+                    start = time.time()
                     page = requests.get(url, timeout=5)
                     soup = BeautifulSoup(page.text, "html.parser")
                     text = soup.get_text().lower()
+                    print(time.time() - start)
                     if query.lower() in text:
                         
                         try:
