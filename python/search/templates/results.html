@@ -34,17 +34,24 @@
 
     <!-- Groq analysis-->
     <h3>Contextual Analysis</h3>
-    <p>{{ analysis }}</p>
+    <p id="analysis">{{ analysis }}</p>
 
-    <form action="/hackernews_index" method="post">
-        <input type="hidden" name="query" value="{{ query }}">
-        <button type="submit" class="hn-button">Indexar Top Stories do Hacker News</button>
-    </form>
+    <script>
+    const el = document.getElementById('analysis');
+    const text = el.textContent;
+    const html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    el.innerHTML = html;
+    </script>
     
 
 {% else %}
     <p>No results found!</p>
 {% endif %}
+
+<form action="/hackernews_index" method="post">
+    <input type="hidden" name="query" value="{{ query }}">
+    <button type="submit" class="hn-button">Indexar Top Stories do Hacker News</button>
+</form>
 
 {% endblock %}
 
