@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-from fastapi.responses import FileResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -27,6 +26,8 @@ import asyncio
 
 import threading
 from concurrent import futures
+
+import re
 
 executor = ThreadPoolExecutor(max_workers=1)
 
@@ -192,7 +193,6 @@ def generate_analysis(query: str, results):
     except:
         return "AI overview couldn't be reached"
 
-    print(prompt)
     return response.choices[0].message.content
 
 
@@ -212,18 +212,25 @@ def hackernews_index(request: Request, query: str = Form(...)):
 
 
 def index_hackernews_stories(top_ids, query):
+    
+    
+    words = query.lower().split()
+    
     for story_id in top_ids[:50]: 
         story = requests.get(f"https://hacker-news.firebaseio.com/v0/item/{story_id}.json").json()
         url = story.get("url")
+        
         if url:
             try:
-                
                 page = requests.get(url, timeout=5)
                 soup = BeautifulSoup(page.text, "html.parser")
                 text = soup.get_text().lower()
 
-                if query.lower() in text:
-                    print(f"{query} is in the link {url} and id if {story_id}")
+                found_all = all(re.search(rf"\b{re.escape(word)}\b", text) for word in words)
+                
+                if found_all:
+                    print(f"{query} is in the link {url} and id is {story_id}")
+                    
                     try:
                         stub.putNew(index_pb2.PutNewRequest(url=url))
                     except Exception as e:
