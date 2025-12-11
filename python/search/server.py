@@ -66,7 +66,7 @@ loop = asyncio.get_event_loop()  # main FastAPI loop
 class ServerServicer(index_pb2_grpc.ServerServicer):
     def pushSystemStats(self, request, context):
         # schedule async broadcast on main loop
-        print("got stats")
+        #print("got stats")
         loop.call_soon_threadsafe(asyncio.create_task, broadcast(request))
         return empty_pb2.Empty()
 
@@ -215,7 +215,7 @@ def index_hackernews_stories(top_ids, query):
     
     
     words = query.lower().split()
-    
+
     for story_id in top_ids[:50]: 
         story = requests.get(f"https://hacker-news.firebaseio.com/v0/item/{story_id}.json").json()
         url = story.get("url")
@@ -224,9 +224,9 @@ def index_hackernews_stories(top_ids, query):
             try:
                 page = requests.get(url, timeout=5)
                 soup = BeautifulSoup(page.text, "html.parser")
-                text = soup.get_text().lower()
-
-                found_all = all(re.search(rf"\b{re.escape(word)}\b", text) for word in words)
+                text = soup.get_text().lower().split()
+                
+                found_all = all(word in text for word in words)
                 
                 if found_all:
                     print(f"{query} is in the link {url} and id is {story_id}")
@@ -235,6 +235,8 @@ def index_hackernews_stories(top_ids, query):
                         stub.putNew(index_pb2.PutNewRequest(url=url))
                     except Exception as e:
                         print(e)
+                else:
+                    print(f"{query} IS NOT in the link {url} ")
                         
             except Exception:
                 continue
