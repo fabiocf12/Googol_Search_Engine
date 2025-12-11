@@ -21,6 +21,7 @@
 
             socket.onmessage = (event) => {
                 const data = JSON.parse(event.data);
+                console.log("got", data);
 
                 // fill barrels table with cells
                 const barrelsBody = document.querySelector("#barrels-table tbody");

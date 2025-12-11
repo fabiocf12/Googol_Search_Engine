@@ -56,6 +56,7 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
         threading.Thread(target=self.autonomous_stats).start()
 
     def autonomous_stats(self):
+        last_response = index_pb2.SystemStatsResponse()
         while True:
             response = index_pb2.SystemStatsResponse()
             
@@ -76,12 +77,15 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
                 response.barrels.append(
                     index_pb2.BarrelStats(port=barrel_id, num_entries=num_entries, avg_search_time=avg_time)
                 )
-                
+                  
                 
             for (query, count) in self.popular_searches.most_common(10): 
                 response.top_searches.append(query)
 
-            self.server_stub.pushSystemStats(response)
+            if response != last_response:
+                self.server_stub.pushSystemStats(response)
+
+            last_response = response
             time.sleep(1)
             print("sent a push")
 
