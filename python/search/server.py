@@ -23,7 +23,7 @@ from typing import Set
 from concurrent.futures import ThreadPoolExecutor
 import asyncio
 
-import time
+import threading
 
 executor = ThreadPoolExecutor(max_workers=1)
 
@@ -184,32 +184,33 @@ def hackernews_index(request: Request, query: str = Form(...)):
     
     try:
         top_ids = requests.get("https://hacker-news.firebaseio.com/v0/topstories.json").json()
-        added = 0
-
-        for story_id in top_ids[:50]: 
-
-            story = requests.get(f"https://hacker-news.firebaseio.com/v0/item/{story_id}.json").json()
-            url = story.get("url")
-            if url:
-                try:
-                    
-                    page = requests.get(url, timeout=5)
-                    soup = BeautifulSoup(page.text, "html.parser")
-                    text = soup.get_text().lower()
-
-                    if query.lower() in text:
-                        print(f"{query} is in the link {url} and id if {story_id}")
-                        try:
-                            stub.putNew(index_pb2.PutNewRequest(url=url))
-                            added += 1
-                        except Exception as e:
-                            print(e)
-                            
-                except Exception:
-                    continue
-
-        msg = f"{added} stories from Hacker News added to the indexation!"
     except Exception as e:
-        msg = f"Error integrating Hacker News: {str(e)}"
+        return templates.TemplateResponse("message.html",{"request": request, "message": str(e)})
+
+    threading.Thread(target=index_hackernews_stories, args=(top_ids, query,)).start()
+
+    msg = f"{len(top_ids)} stories from Hacker News retrieved!"
 
     return templates.TemplateResponse("message.html",{"request": request, "message": msg})
+
+
+def index_hackernews_stories(top_ids, query):
+    for story_id in top_ids[:50]: 
+        story = requests.get(f"https://hacker-news.firebaseio.com/v0/item/{story_id}.json").json()
+        url = story.get("url")
+        if url:
+            try:
+                
+                page = requests.get(url, timeout=5)
+                soup = BeautifulSoup(page.text, "html.parser")
+                text = soup.get_text().lower()
+
+                if query.lower() in text:
+                    print(f"{query} is in the link {url} and id if {story_id}")
+                    try:
+                        stub.putNew(index_pb2.PutNewRequest(url=url))
+                    except Exception as e:
+                        print(e)
+                        
+            except Exception:
+                continue
