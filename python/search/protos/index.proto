@@ -20,7 +20,10 @@ service Gateway {
     rpc searchWord (SearchWordRequest) returns (SearchWordResponse);
     rpc searchPage (SearchPageRequest) returns (SearchPageResponse);
     rpc getSystemStats (google.protobuf.Empty) returns (SystemStatsResponse);
+}
 
+service Server {
+    rpc pushSystemStats (SystemStatsResponse) returns (google.protobuf.Empty);
 }
 
 message PutNewRequest {

@@ -5,11 +5,13 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi import Request
 from fastapi import Form, WebSocket
+from starlette.websockets import WebSocketDisconnect
 
 import os
 from groq import Groq
 
 import grpc
+import grpc.aio
 from google.protobuf import empty_pb2
 import index_pb2 as index_pb2
 import index_pb2_grpc as index_pb2_grpc
@@ -24,6 +26,7 @@ from concurrent.futures import ThreadPoolExecutor
 import asyncio
 
 import threading
+from concurrent import futures
 
 executor = ThreadPoolExecutor(max_workers=1)
 
@@ -57,13 +60,43 @@ except Exception as e:
 
 print(f"Connected to Gateway at {gateway_host}:{gateway_port}")
 
+loop = asyncio.get_event_loop()  # main FastAPI loop
 
+class ServerServicer(index_pb2_grpc.ServerServicer):
+    def pushSystemStats(self, request, context):
+        # schedule async broadcast on main loop
+        print("got stats")
+        loop.call_soon_threadsafe(asyncio.create_task, broadcast(request))
+        return empty_pb2.Empty()
+
+with open("config.json") as f:
+    config = json.load(f)
+    host = config["server"]["host"]
+    port = config["server"]["port"]
+
+def start_grpc_server():
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    index_pb2_grpc.add_ServerServicer_to_server(ServerServicer(), server)
+    server.add_insecure_port(f"{host}:{port}")
+    server.start()
+    server.wait_for_termination()
+
+threading.Thread(target=start_grpc_server, daemon=True).start()
 connected_clients: Set[WebSocket] = set()
 
-async def broadcast(message: str):
+async def broadcast(result):
+
+    barrels_dict = [
+        {"port": b.port, "num_entries": b.num_entries, "avg_search_time": b.avg_search_time}
+            for b in result.barrels if b.num_entries != -1]
+    top_searches = list(result.top_searches)
+
+    msg = json.dumps({"barrels": barrels_dict, "top_searches": top_searches})
+    
     for client in connected_clients.copy():
         try:
-            await client.send_text(message)
+            print("sending stats")
+            await client.send_text(msg)
         except:
             connected_clients.discard(client)
             print("failed to send to client",client)
@@ -71,7 +104,7 @@ async def broadcast(message: str):
 def get_system_stats_sync():
     # blocking call using the sync stub
     try:
-        result =  stub.getSystemStats(empty_pb2.Empty())
+        result = stub.getSystemStats(empty_pb2.Empty())
     except:
         result = ""
 
@@ -80,32 +113,16 @@ def get_system_stats_sync():
 @app.websocket("/my-websocket")
 async def websocket_endpoint(ws: WebSocket):
     await ws.accept()
-    print("just accepted a websocket")
-
     connected_clients.add(ws)
     try:
         while True:
-            loop = asyncio.get_event_loop()
-            # Run blocking gRPC call in thread
-            result = await loop.run_in_executor(executor, get_system_stats_sync)
-
-            if result == "":
-                await asyncio.sleep(1) 
-                continue
-
-            barrels_dict = [
-                {"port": b.port, "num_entries": b.num_entries, "avg_search_time": b.avg_search_time}
-                  for b in result.barrels if b.num_entries != -1]
-            top_searches = list(result.top_searches)
-
-            msg = json.dumps({"barrels": barrels_dict, "top_searches": top_searches})
-            await broadcast(msg)
-
-            await asyncio.sleep(1) 
-    except Exception as e:
-        print(e)
+            await asyncio.sleep(1)  # keep loop alive for broadcast
+    except WebSocketDisconnect:
+        pass
     finally:
         connected_clients.discard(ws)
+        print("client disconnected", ws)
+    
 
 @app.get("/",response_class=HTMLResponse) # home route
 def read_index(request: Request):

@@ -27,6 +27,7 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
         self.gateway_host = config["gateway"]["host"]
         self.gateway_port = config["gateway"]["port"]
         self.barrel_configs = config["barrels"]
+        self.server_configs = config["server"]
 
         self.barrels = []  #stubs list
         self.barrel_info = []  #info for round-robin and stats
@@ -47,6 +48,43 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
             
 
         self.round_robin_counter = 0
+
+        host = self.server_configs["host"]
+        port = self.server_configs["port"]
+        channel_server = grpc.insecure_channel(f"{host}:{port}")
+        self.server_stub = index_pb2_grpc.ServerStub(channel_server)
+        threading.Thread(target=self.autonomous_stats).start()
+
+    def autonomous_stats(self):
+        while True:
+            response = index_pb2.SystemStatsResponse()
+            
+            for info in self.barrel_info:
+                barrel_id = info["id"]
+                
+                avg_time = sum(self.stats[barrel_id]["times"]) / len(self.stats[barrel_id]["times"]) if self.stats[barrel_id]["times"] else 0
+                    
+                try: #connection with barrel
+                    channel = grpc.insecure_channel(f'{info["host"]}:{info["port"]}')
+                    stub = index_pb2_grpc.IndexStub(channel)
+                    stat = stub.getStats(empty_pb2.Empty())
+                    num_entries = stat.num_entries
+                    
+                except Exception as e:
+                    num_entries = -1  # offline
+                    
+                response.barrels.append(
+                    index_pb2.BarrelStats(port=barrel_id, num_entries=num_entries, avg_search_time=avg_time)
+                )
+                
+                
+            for (query, count) in self.popular_searches.most_common(10): 
+                response.top_searches.append(query)
+
+            self.server_stub.pushSystemStats(response)
+            time.sleep(1)
+            print("sent a push")
+
 
 
     def takeNext(self, request, context):
