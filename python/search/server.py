@@ -143,6 +143,12 @@ def search_func(request: Request , value: str , page: int = 1):
     try:
         result = stub.searchWord(index_pb2.SearchWordRequest(words=words_list))
         results = result.results
+        
+        if not results:  #check if barrels are offline or the actual search didnt lead omse
+        
+            stats = stub.getSystemStats(empty_pb2.Empty())
+            if all(b.num_entries == -1 for b in stats.barrels):
+                return templates.TemplateResponse("error.html", {"request": request, "error": "System unavailable"})    
             
     except Exception as e: # sends back error, for debug
         error_message = str(e)
@@ -177,6 +183,13 @@ def page_func(request: Request, value: str):
     
     try:
         result = stub.searchPage(index_pb2.SearchPageRequest(url=value))
+        urls = result.urls
+        
+        if not urls:  #check if barrels are offline or the actual search didnt lead omse
+            stats = stub.getSystemStats(empty_pb2.Empty())
+            if all(b.num_entries == -1 for b in stats.barrels):
+                return templates.TemplateResponse("error.html", {"request": request, "error": "System unavailable"})   
+            
     except Exception as e:
         result = str(e)
         return templates.TemplateResponse("error.html",{"request": request, "error": result})
