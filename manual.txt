@@ -1,0 +1,13 @@
+Como executar o projeto:
+1. instalar todas a seguintes depêndencias:
+os, sys, json, time, random, asyncio, threading, queue, pickle, argparse, collections,
+typing, urllib.parse, requests, bs4, dotenv, grpc, google.protobuf,
+bloom_filter2, fastapi, starlette.websockets, jinja2, uvicorn
+(nota: as bibliotecas index_pb2, index_pb2_grpc estão incluídas nos ficheiros do projeto)
+
+2. introduzir a API key de groq no ficheiro .env, no local indicado
+
+3. executar os componentes de backend (gateway.py, indexserver.py, robot.py, server.py), manualmente ou, alternativamente,
+ao executar o ficheiro run_all.bat
+
+4. a página web estará disponível no porto 8000 da máquina que executa o programa server.py
