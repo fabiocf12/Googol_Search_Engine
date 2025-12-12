@@ -80,8 +80,13 @@ threading.Thread(target=start_grpc_server, daemon=True).start()
 # ----------------------------
 connected_clients: Set[WebSocket] = set()
 
-async def broadcast(result):
+last_stats = None
 
+async def broadcast(result):
+    
+    global last_stats
+    last_stats = result
+    
     barrels_dict = [
         {"port": b.port, "num_entries": b.num_entries, "avg_search_time": b.avg_search_time}
             for b in result.barrels if b.num_entries != -1]
@@ -102,6 +107,14 @@ async def broadcast(result):
 async def websocket_endpoint(ws: WebSocket):
     await ws.accept()
     connected_clients.add(ws)
+    
+    if last_stats:
+        print(f"vou enviar laststats ao client {ws}")
+        await ws.send_text(json.dumps({
+            "barrels": [{"port": b.port, "num_entries": b.num_entries, "avg_search_time": b.avg_search_time} for b in last_stats.barrels if b.num_entries != -1],
+            "top_searches": list(last_stats.top_searches)
+        }))
+        
     try:
         while True:
             await asyncio.sleep(1)  # keep loop alive for broadcast
