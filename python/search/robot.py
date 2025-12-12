@@ -9,11 +9,11 @@ import json
 from urllib.parse import urljoin, urlparse
 import os
 
-def add_callback(future, link, url, barrel, attempts):
-    future.add_done_callback(lambda fut: on_ack(fut, link, url, barrel, attempts))
+def add_callback_page(future, link, url, barrel, attempts):
+    future.add_done_callback(lambda fut: on_ack_page(fut, link, url, barrel, attempts))
 
 
-def on_ack(fut, link, url, barrel, attempts):
+def on_ack_page(fut, link, url, barrel, attempts):
     if attempts >= 6:
         return
     try:
@@ -24,11 +24,35 @@ def on_ack(fut, link, url, barrel, attempts):
         print(f"RPC failed for link={link} from url={url}. Attempts: {attempts}")
         # retry or handle error
 
-        future = barrel.addToIndexPage.future(
+        future = barrel.addToIndex.future(
             index_pb2.AddToIndexRequestPage(url_pointed=link, url_that_points=url),
             timeout=5.0  # seconds
         )
-        add_callback(future, link, url, barrel, attempts + 1)
+        add_callback_page(future, link, url, barrel, attempts + 1)
+
+def add_callback_words(future, words, url, snippet, title, barrel, attempts):
+    future.add_done_callback(lambda fut: on_ack_words(fut, words, url, snippet, title, barrel, attempts))
+
+
+def on_ack_words(fut, words, url, snippet, title, barrel, attempts):
+    if attempts >= 6:
+        return
+    try:
+        result = fut.result()  # raises if RPC failed
+        #print(f"ACK received for link={link} from url={url}")
+        # cancel timer, mark success, etc.
+    except grpc.RpcError as e:
+        print(f"RPC failed for url={url}. Attempts: {attempts}")
+        # retry or handle error
+
+        future = barrel.addToIndex.future(
+            index_pb2.AddToIndexRequest(url=url,words=words,
+                                    title=title,
+                                    snippet=snippet),
+            timeout=5.0  # seconds
+            )
+        
+        add_callback_words(future, words, url, snippet, title, barrel, attempts + 1)
 
     
 def run():
@@ -80,7 +104,7 @@ def run():
                             )
                             attempts = 1
                             future.add_done_callback(lambda fut, l=link, u=url, b=stub_barrel, a=attempts:
-                                                                            on_ack(fut, l, u, b, a))
+                                                                            on_ack_page(fut, l, u, b, a))
                         abs_links.append(link)
                         
                     
@@ -100,8 +124,8 @@ def run():
                                                         snippet=page_snippet),timeout=5.0  # seconds
                                                         )
                         attempts = 1
-                        future.add_done_callback(lambda fut, l=link, u=url, b=stub_barrel, a=attempts:
-                                                on_ack(fut, l, u, b, a))
+                        future.add_done_callback(lambda fut, words=page_text_tokenized, u=url, title=page_title, snippet=page_snippet, b=stub_barrel, a=attempts:
+                                                on_ack_words(fut, words, u, title, snippet, b, a))
                 except requests.RequestException as e:
                     print(f"Error fetching webpage: {e}")
                 
