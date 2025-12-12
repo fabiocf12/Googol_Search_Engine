@@ -87,8 +87,10 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
 
             if response != last_response:
                 print("GATEWAY : sent a push")
-                self.server_stub.pushSystemStats(response)
-
+                try:
+                    self.server_stub.pushSystemStats(response)
+                except:
+                    print("GATEWAY: server didnt accept")
             last_response = response
 
 
