@@ -51,11 +51,14 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
 
         host = self.server_configs["host"]
         port = self.server_configs["port"]
+        
         channel_server = grpc.insecure_channel(f"{host}:{port}")
         self.server_stub = index_pb2_grpc.ServerStub(channel_server)
-        threading.Thread(target=self.autonomous_stats).start()
+        
+        threading.Thread(target=self.autonomous_stats,daemon=True).start()
 
     def autonomous_stats(self):
+        
         last_response = index_pb2.SystemStatsResponse()
         while True:
             response = index_pb2.SystemStatsResponse()
@@ -83,12 +86,10 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
                 response.top_searches.append(query)
 
             if response != last_response:
+                print("GATEWAY : sent a push")
                 self.server_stub.pushSystemStats(response)
 
             last_response = response
-            time.sleep(1)
-            print("sent a push")
-
 
 
     def takeNext(self, request, context):

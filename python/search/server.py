@@ -1,3 +1,8 @@
+import os, json, asyncio, threading, requests
+from concurrent.futures import ThreadPoolExecutor
+from concurrent import futures
+from typing import Set
+
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
@@ -6,74 +11,60 @@ from fastapi import Request
 from fastapi import Form, WebSocket
 from starlette.websockets import WebSocketDisconnect
 
-import os
+from dotenv import load_dotenv
+from bs4 import BeautifulSoup
 from groq import Groq
 
 import grpc
-import grpc.aio
 from google.protobuf import empty_pb2
-import index_pb2 as index_pb2
-import index_pb2_grpc as index_pb2_grpc
-import requests
-import json
+import index_pb2, index_pb2_grpc
 
-from dotenv import load_dotenv
-
-from bs4 import BeautifulSoup
-from typing import Set
-from concurrent.futures import ThreadPoolExecutor
-import asyncio
-
-import threading
-from concurrent import futures
-
-import re
-
+#----------------------------
+# Initial Config
+#----------------------------
+load_dotenv()
 executor = ThreadPoolExecutor(max_workers=1)
 
-app = FastAPI()
-
-templates = Jinja2Templates(directory="templates")
-
-static_dir = os.path.join(os.path.dirname(__file__), "static")
-app.mount("/static", StaticFiles(directory=static_dir), name="static")
-
-# Load variables from .env
-load_dotenv()
-
-#Config Groq client
-groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
-
-# grpc setup --
 with open("config.json") as f:
     config = json.load(f)
 
 gateway_host = config["gateway"]["host"]
 gateway_port = config["gateway"]["port"]
+host = config["server"]["host"]
+port = config["server"]["port"]
 
 
-# Create a gRPC channel and client
+#Config Groq client for IA analysis
+groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+
+# Create a gRPC channel and client to gateway
 try:
     channel = grpc.insecure_channel(f"{gateway_host}:{gateway_port}")
     stub = index_pb2_grpc.GatewayStub(channel)
+    print(f"Connected to Gateway at {gateway_host}:{gateway_port}")
 except Exception as e:
     print(e)
 
-print(f"Connected to Gateway at {gateway_host}:{gateway_port}")
 
 loop = asyncio.get_event_loop()  # main FastAPI loop
 
+#-----------------
+# FastAPI() Setup
+#-----------------
+app = FastAPI()
+templates = Jinja2Templates(directory="templates")
+static_dir = os.path.join(os.path.dirname(__file__), "static")
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
+#------------------------------
+# gRPC Server (ServerServicer)
+#------------------------------
 class ServerServicer(index_pb2_grpc.ServerServicer):
-    def pushSystemStats(self, request, context):
-        # schedule async broadcast on main loop
-        #print("got stats")
+    def pushSystemStats(self, request, context): #schedule async broadcast on main loop
+        print("Server : got stats")
         loop.call_soon_threadsafe(asyncio.create_task, broadcast(request))
         return empty_pb2.Empty()
-
-with open("config.json") as f:
-    config = json.load(f)
-    host = config["server"]["host"]
-    port = config["server"]["port"]
 
 def start_grpc_server():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
@@ -83,6 +74,10 @@ def start_grpc_server():
     server.wait_for_termination()
 
 threading.Thread(target=start_grpc_server, daemon=True).start()
+
+# ----------------------------
+# WebSocket management
+# ----------------------------
 connected_clients: Set[WebSocket] = set()
 
 async def broadcast(result):
@@ -96,20 +91,12 @@ async def broadcast(result):
     
     for client in connected_clients.copy():
         try:
-            print("sending stats")
+            print("Server : sending stats")
             await client.send_text(msg)
         except:
             connected_clients.discard(client)
             print("failed to send to client",client)
 
-def get_system_stats_sync():
-    # blocking call using the sync stub
-    try:
-        result = stub.getSystemStats(empty_pb2.Empty())
-    except:
-        result = ""
-
-    return result
 
 @app.websocket("/my-websocket")
 async def websocket_endpoint(ws: WebSocket):
@@ -124,10 +111,14 @@ async def websocket_endpoint(ws: WebSocket):
         connected_clients.discard(ws)
         print("client disconnected", ws)
     
-
+    
+# ----------------------------
+# HTTP routes
+# ----------------------------
 @app.get("/",response_class=HTMLResponse) # home route
 def read_index(request: Request):
     return templates.TemplateResponse("index.html",{"request":request})
+
 
 @app.get("/index",response_class=HTMLResponse)
 def index_func(request : Request, value: str):
@@ -135,12 +126,13 @@ def index_func(request : Request, value: str):
     try:
         stub.putNew(index_pb2.PutNewRequest(url=value))
         message = f"Submitted URL: {value} to Gateway"
-
+        
     except Exception as e:
         message = str(e)
         return templates.TemplateResponse("error.html", {"request": request, "message": message})
 
     return templates.TemplateResponse("message.html", {"request": request, "message": message})
+
 
 @app.get("/search",response_class=HTMLResponse)
 def search_func(request: Request , value: str , page: int = 1):
@@ -169,7 +161,16 @@ def search_func(request: Request , value: str , page: int = 1):
     
     analysis = generate_analysis(value, results)
     
-    return templates.TemplateResponse("results.html",{"request": request, "results": paginated_results, "query": value,"error": error_message,  "page": page, "total_pages": total_pages,"analysis": analysis})
+    return templates.TemplateResponse("results.html",{
+        "request": request,
+        "results": paginated_results,
+        "query": value,
+        "error": error_message, 
+        "page": page,
+        "total_pages": total_pages,
+        "analysis": analysis
+    })
+
 
 @app.get("/page",response_class=HTMLResponse)
 def page_func(request: Request, value: str):
@@ -181,19 +182,6 @@ def page_func(request: Request, value: str):
         return templates.TemplateResponse("error.html",{"request": request, "error": result})
         
     return templates.TemplateResponse("page.html",{"request": request, "results": result.urls, "query":value})
-
-def generate_analysis(query: str, results):
-
-    result_str = str([result.snippet + "\n\n" for result in results[:4]])
-    
-    prompt = f"O utilizador pesquisou por : {query}.\n\n Os resultados são {result_str}. Escreve uma análise contextualizada, resumindo as principais ideias!"
-    
-    try:
-        response = groq_client.chat.completions.create(model="llama-3.1-8b-instant", messages = [{"role": "user", "content":prompt}])
-    except:
-        return "AI overview couldn't be reached"
-
-    return response.choices[0].message.content
 
 
 @app.post("/hackernews_index")
@@ -210,13 +198,28 @@ def hackernews_index(request: Request, query: str = Form(...)):
 
     return templates.TemplateResponse("message.html",{"request": request, "message": msg})
 
+# ----------------------------
+# Aux functions
+# ----------------------------
+def generate_analysis(query: str, results):
+
+    result_str = str([result.snippet + "\n\n" for result in results[:4]])
+    prompt = f"O utilizador pesquisou por : {query}.\n\n Os resultados são {result_str}. Escreve uma análise contextualizada, resumindo as principais ideias!"
+    
+    try:
+        response = groq_client.chat.completions.create(model="llama-3.1-8b-instant", messages = [{"role": "user", "content":prompt}])
+    except:
+        return "AI overview couldn't be reachedª"
+
+    return response.choices[0].message.content
+
 
 def index_hackernews_stories(top_ids, query):
-    
     
     words = query.lower().split()
 
     for story_id in top_ids[:50]: 
+        
         story = requests.get(f"https://hacker-news.firebaseio.com/v0/item/{story_id}.json").json()
         url = story.get("url")
         
@@ -229,14 +232,13 @@ def index_hackernews_stories(top_ids, query):
                 found_all = all(word in text for word in words)
                 
                 if found_all:
-                    print(f"{query} is in the link {url} and id is {story_id}")
-                    
+                    print(f"{query} IS IN the link {url} and the id is {story_id}")
                     try:
                         stub.putNew(index_pb2.PutNewRequest(url=url))
                     except Exception as e:
                         print(e)
                 else:
-                    print(f"{query} IS NOT in the link {url} ")
+                    print(f"{query} IS NOT IN the link {url} ")
                         
             except Exception:
                 continue
