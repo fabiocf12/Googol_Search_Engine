@@ -32,6 +32,8 @@ gateway_host = config["gateway"]["host"]
 gateway_port = config["gateway"]["port"]
 host = config["server"]["host"]
 port = config["server"]["port"]
+FRONTEND_HOST = config["frontend"]["host"]
+FRONTEND_PORT = config["frontend"]["port"]
 
 
 #Config Groq client for IA analysis
@@ -130,7 +132,7 @@ async def websocket_endpoint(ws: WebSocket):
 # ----------------------------
 @app.get("/",response_class=HTMLResponse) # home route
 def read_index(request: Request):
-    return templates.TemplateResponse("index.html",{"request":request})
+    return templates.TemplateResponse("index.html",{"request":request,"ws_host": FRONTEND_HOST,"ws_port": FRONTEND_PORT})
 
 
 @app.get("/index",response_class=HTMLResponse)
@@ -142,9 +144,9 @@ def index_func(request : Request, value: str):
         
     except Exception as e:
         message = str(e)
-        return templates.TemplateResponse("error.html", {"request": request, "message": message})
+        return templates.TemplateResponse("error.html", {"request": request, "message": message,"ws_host": FRONTEND_HOST,"ws_port": FRONTEND_PORT})
 
-    return templates.TemplateResponse("message.html", {"request": request, "message": message})
+    return templates.TemplateResponse("message.html", {"request": request, "message": message,"ws_host": FRONTEND_HOST,"ws_port": FRONTEND_PORT})
 
 
 @app.get("/search",response_class=HTMLResponse)
@@ -161,11 +163,11 @@ def search_func(request: Request , value: str , page: int = 1):
         
             stats = stub.getSystemStats(empty_pb2.Empty())
             if all(b.num_entries == -1 for b in stats.barrels):
-                return templates.TemplateResponse("error.html", {"request": request, "error": "System unavailable"})    
+                return templates.TemplateResponse("error.html", {"request": request, "error": "System unavailable","ws_host": FRONTEND_HOST,"ws_port": FRONTEND_PORT})    
             
     except Exception as e: # sends back error, for debug
         error_message = str(e)
-        return templates.TemplateResponse("error.html",{"request": request, "error": error_message})
+        return templates.TemplateResponse("error.html",{"request": request, "error": error_message,"ws_host": FRONTEND_HOST,"ws_port": FRONTEND_PORT})
     
     # Page by page
     per_page = 10
@@ -187,7 +189,9 @@ def search_func(request: Request , value: str , page: int = 1):
         "error": error_message, 
         "page": page,
         "total_pages": total_pages,
-        "analysis": analysis
+        "analysis": analysis,
+        "ws_host": FRONTEND_HOST,
+        "ws_port": FRONTEND_PORT
     })
 
 
@@ -201,13 +205,13 @@ def page_func(request: Request, value: str):
         if not urls:  #check if barrels are offline or the actual search didnt lead omse
             stats = stub.getSystemStats(empty_pb2.Empty())
             if all(b.num_entries == -1 for b in stats.barrels):
-                return templates.TemplateResponse("error.html", {"request": request, "error": "System unavailable"})   
+                return templates.TemplateResponse("error.html", {"request": request, "error": "System unavailable","ws_host": FRONTEND_HOST,"ws_port": FRONTEND_PORT})   
             
     except Exception as e:
         result = str(e)
-        return templates.TemplateResponse("error.html",{"request": request, "error": result})
+        return templates.TemplateResponse("error.html",{"request": request, "error": result,"ws_host": FRONTEND_HOST,"ws_port": FRONTEND_PORT})
         
-    return templates.TemplateResponse("page.html",{"request": request, "results": result.urls, "query":value})
+    return templates.TemplateResponse("page.html",{"request": request, "results": result.urls, "query":value,"ws_host": FRONTEND_HOST,"ws_port": FRONTEND_PORT})
 
 
 @app.post("/hackernews_index")
@@ -216,13 +220,13 @@ def hackernews_index(request: Request, query: str = Form(...)):
     try:
         top_ids = requests.get("https://hacker-news.firebaseio.com/v0/topstories.json").json()
     except Exception as e:
-        return templates.TemplateResponse("message.html",{"request": request, "message": str(e)})
+        return templates.TemplateResponse("message.html",{"request": request, "message": str(e),"ws_host": FRONTEND_HOST,"ws_port": FRONTEND_PORT})
 
     threading.Thread(target=index_hackernews_stories, args=(top_ids, query,)).start()
 
     msg = f"{len(top_ids)} stories from Hacker News retrieved!"
 
-    return templates.TemplateResponse("message.html",{"request": request, "message": msg})
+    return templates.TemplateResponse("message.html",{"request": request, "message": msg,"ws_host": FRONTEND_HOST,"ws_port": FRONTEND_PORT})
 
 # ----------------------------
 # Aux functions

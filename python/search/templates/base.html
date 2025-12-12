@@ -11,8 +11,10 @@
     <script>
 
         function connect() {
+            
+            const wsUrl = "ws://{{ ws_host }}:{{ ws_port }}/my-websocket";
+            const socket = new WebSocket(wsUrl);
 
-            const socket = new WebSocket("ws://127.0.0.1:8000/my-websocket");
             socket.onopen = () => {
                 console.log("Connected to the server");
                 const status = document.getElementById("stats_status");
