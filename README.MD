@@ -27,23 +27,29 @@ A distributed search engine built with **FastAPI**, **gRPC**, **WebSockets**, an
 
 ---
 
-## Installation
+## Clone repository
 
 1. **Clone the repository**
 
-```bash
 git clone https://github.com/yourusername/googol-search.git
 cd googol-search
 
+--- 
 
-3. Install dependencies
+## Installation of dependencies
+
 pip install -r requirements.txt
 
+--- 
 
-4. Set environment variables
+## Set environment variables
+
 GROQ_API_KEY=your_api_key_here
 
-5. Start the System
+---
+
+## Start the System
+
 On Windows, run the provided batch script:
 
 ./run_all.bat 
@@ -55,4 +61,8 @@ This will start:
     Crawler robots
     FastAPI server
 
-6. Access the website provided on the windows terminal (that opened up) from server.py 
+---
+
+## Usage 
+
+ Access the website provided on the windows terminal (that opened up) from server.py 
