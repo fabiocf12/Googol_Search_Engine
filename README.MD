@@ -1,90 +1,58 @@
-Googol Search Engine
+# Googol Search Engine
 
-A distributed search engine project built with FastAPI, gRPC, WebSockets, and a simple crawling mechanism.
+A distributed search engine built with **FastAPI**, **gRPC**, **WebSockets**, and a simple crawler system.
 
-Features
+---
 
-Distributed indexing across multiple barrels (index servers)
+## Features
 
-Real-time system statistics via WebSockets
+- Distributed indexing across multiple barrels (index servers)  
+- Real-time system statistics via WebSockets  
+- Search for words or pages  
+- Automatic crawling and indexing of Hacker News URLs  
+- AI-generated analysis of search results using **Groq**
 
-Search for words or pages
+---
 
-Automatic crawling and indexing of URLs from Hacker News
+## Architecture
 
-AI-generated analysis of search results using Groq
+**Components:**
 
-Architecture
+- **Gateway**: Receives URLs, distributes them to barrels, tracks popular searches, and gathers stats.  
+- **Barrels**: Index servers storing content and serving search queries.  
+- **Server**: FastAPI application exposing HTTP routes and WebSocket endpoints for live stats.  
+- **Robot**: Simple crawler fetching URLs, extracting text, and sending them to barrels.  
+- **WebSockets**: Deliver live updates of system stats (active barrels, average search time, top searches).  
+- **gRPC**: Handles communication between Gateway, Barrels, and Server for stats and indexing.
 
-Gateway: Central coordinator; receives URLs, distributes them to barrels, tracks popular searches, and gathers stats.
+---
 
-Barrels: Index servers storing page content and serving search requests.
+## Installation
 
-Server: FastAPI application exposing HTTP routes and WebSocket endpoints for real-time statistics.
+1. **Clone the repository**
 
-Robot: Simple crawler fetching URLs, extracting text, and sending them to barrels.
-
-WebSockets: Provide live updates of system stats (active barrels, average search time, top searches).
-
-gRPC: Handles communication between Gateway, Barrels, and Server for stats and indexing.
-
-Setup
-
-Clone the repository:
-
-git clone <repo_url>
-cd <repo_folder>
+```bash
+git clone https://github.com/yourusername/googol-search.git
+cd googol-search
 
 
-Install dependencies:
-
+3. Install dependencies
 pip install -r requirements.txt
 
 
-Create a .env file with your Groq API key:
-
+4. Set environment variables
 GROQ_API_KEY=your_api_key_here
 
+5. Start the System
+On Windows, run the provided batch script:
 
-Start the system:
+./run_all.bat 
 
-On Windows, run the batch script:
+This will start:
 
-start_system.bat
+    Gateway
+    Multiple barrel instances
+    Crawler robots
+    FastAPI server
 
-
-This will open multiple command windows and run:
-
-gateway.py (distributes URLs)
-
-indexServer.py instances (barrels)
-
-robot.py instances (crawlers)
-
-FastAPI server with Uvicorn (server:app)
-
-Access the site:
-
-http://localhost:8000
-
-Usage
-
-Index a URL: Use the form on the home page or the /index route.
-
-Search: Use the /search route with a query.
-
-Page lookup: Use the /page route with a URL.
-
-Hacker News indexing: Submit a query via /hackernews_index to index relevant stories.
-
-Real-time stats: View active barrels, average search times, and top searches via WebSockets (displayed on all pages).
-
-Testing
-
-Crawlers (robot.py) fetch URLs and push to barrels.
-
-Barrels can be started/stopped individually for testing resilience.
-
-WebSockets can be observed for live updates in the browser console.
-
-AI-generated analysis is shown on the search results page.
+6. Access the website provided on the windows terminal (that opened up) from server.py 
