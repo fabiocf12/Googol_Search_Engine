@@ -8,4 +8,4 @@ start cmd /k "py indexServer.py 2"
 start cmd /k "py robot.py"
 start cmd /k "py robot.py"
 
-start cmd /k "py -m uvicorn server:app"
+start cmd /k "py -m uvicorn server:app --host 0.0.0.0 --port 8000"

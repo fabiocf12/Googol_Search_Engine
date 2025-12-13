@@ -25,7 +25,8 @@ class IndexServicer(index_pb2_grpc.IndexServicer):
         try:
             with open(f"file1_barrel.pkl", "rb") as f:
                 obj = pickle.load(f)
-        except:
+        except Exception as e:
+            print(e)
             obj = 0
         
         if obj:
