@@ -23,7 +23,6 @@ import index_pb2, index_pb2_grpc
 # Initial Config
 #----------------------------
 load_dotenv()
-executor = ThreadPoolExecutor(max_workers=1)
 
 with open("config.json") as f:
     config = json.load(f)

@@ -75,6 +75,7 @@ class GatewayServicer(index_pb2_grpc.GatewayServicer):
                     num_entries = stat.num_entries
                     
                 except Exception as e:
+                    print(e)
                     num_entries = -1  # offline
                     
                 response.barrels.append(
